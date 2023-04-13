@@ -3,6 +3,7 @@ import { Box, Container, Typography, TextField} from "@mui/material";
 import { Unstable_Grid2 as Grid } from '@mui/material'; // Grid version 2
 import '@fontsource/roboto';
 //import Item from '../components/Item';
+import { NumericFormat } from 'react-number-format';
 
 import { styled } from "@mui/material";
 
@@ -18,7 +19,7 @@ const Line = styled('div')(({ theme }) => ({
 
 const Item = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  border: '1px solid',
+  border: '0px solid',
   borderColor: theme.palette.mode === 'dark' ? '#444d58' : '#ced7e0',
   padding: theme.spacing(2),
   textAlign: 'center',
@@ -39,7 +40,22 @@ const Home: React.FC = () => {
           {/* 分子 */}
           <Grid container xs={11} columns={11}>
             <Grid xs={5}>
-              <TextField id="BS" label="食前血糖値" variant="outlined" fullWidth />
+              <NumericFormat 
+                id="current_BGL" 
+                label="食前血糖値" 
+                variant="outlined" 
+                value={100}
+                valueIsNumericString={true}
+                isAllowed={(values) => {
+                  const { floatValue } = values;
+                  if (floatValue) {
+                    return 0 < floatValue && floatValue < 1000;
+                  }
+                  return false;
+                }}
+                customInput={TextField} 
+                fullWidth
+                 />
             </Grid>
             <Grid xs={1}>
               <Item>
@@ -47,7 +63,22 @@ const Home: React.FC = () => {
               </Item>
             </Grid>
             <Grid xs={5}>
-              <TextField id="BS" label="目標血糖値" variant="outlined" fullWidth />
+              <NumericFormat 
+                id="target_BGL" 
+                label="目標血糖値" 
+                variant="outlined" 
+                value={120}
+                valueIsNumericString={true}
+                isAllowed={(values) => {
+                  const { floatValue } = values;
+                  if (floatValue) {
+                    return 0 < floatValue && floatValue < 1000;
+                  }
+                  return false;
+                }}
+                customInput={TextField} 
+                fullWidth
+                 />
             </Grid>
           </Grid>           
 
@@ -61,7 +92,22 @@ const Home: React.FC = () => {
           {/* 分母 */}
           <Grid container xs={11}>
             <Grid xs={12}>
-              <TextField id="BS" label="インスリン効果比" variant="outlined" fullWidth />
+              <NumericFormat 
+                id="insulin_sensitivity_factor" 
+                label="インスリン効果比" 
+                variant="outlined" 
+                value={80}
+                valueIsNumericString={true}
+                isAllowed={(values) => {
+                  const { floatValue } = values;
+                  if (floatValue) {
+                    return 0 < floatValue && floatValue < 1000;
+                  }
+                  return false;
+                }}
+                customInput={TextField} 
+                fullWidth
+                 />
             </Grid>
           </Grid>  
         </Grid>
@@ -93,7 +139,23 @@ const Home: React.FC = () => {
         <Grid container xs={12}>
           <Grid container xs={11} columns={11}>
             <Grid xs={5}>
-              <TextField id="BS" label="カーボ数" variant="outlined" fullWidth />
+              <NumericFormat 
+                id="meal_carbohydrates" 
+                label="カーボ数" 
+                variant="outlined" 
+                value={10.0}
+                valueIsNumericString={true}
+                allowedDecimalSeparators={['%']}
+                isAllowed={(values) => {
+                  const { floatValue } = values;
+                  if (floatValue) {
+                    return 0 < floatValue && floatValue < 1000;
+                  }
+                  return false;
+                }}
+                customInput={TextField} 
+                fullWidth
+                 />
             </Grid>
             <Grid xs={1}>
               <Item>
@@ -101,7 +163,23 @@ const Home: React.FC = () => {
               </Item>
             </Grid>
             <Grid xs={5}>
-              <TextField id="BS" label="カーボ比" variant="outlined" fullWidth />
+              <NumericFormat 
+                id="insulin_to_carb_ratio" 
+                label="カーボ比" 
+                variant="outlined" 
+                value={10.0}
+                valueIsNumericString={true}
+                allowedDecimalSeparators={['%']}
+                isAllowed={(values) => {
+                  const { floatValue } = values;
+                  if (floatValue) {
+                    return 0 < floatValue && floatValue < 1000;
+                  }
+                  return false;
+                }}
+                customInput={TextField} 
+                fullWidth
+                 />
             </Grid>
           </Grid>           
         </Grid>
