@@ -49,7 +49,6 @@ const plusHour = new Date(today.setHours(today.getHours() + 1));
 
 const Round = (value: number, base: number) => {
   const pow = (10 ** base);
-  console.log(value, pow)
   return Math.round(value * pow) / pow;
 }
 
@@ -183,9 +182,6 @@ const Home: React.FC = () => {
                                   inputMode: 'decimal', 
                                   pattern: '[0-9].*' 
                                 }}
-                                onFocus={event => {
-                                  event.target.select();
-                                }}
                                 onValueChange={(values, sourceInfo) => {
                                   changeMealCarbs(index, values.floatValue as number)
                                 }}
@@ -201,6 +197,9 @@ const Home: React.FC = () => {
                                         <RemoveCircle />
                                       </IconButton>
                                     </InputAdornment>
+                                }}
+                                onFocus={event => {
+                                  event.target.select();
                                 }}
                                 customInput={TextField} 
                                 label="カーボ数" 
@@ -235,14 +234,14 @@ const Home: React.FC = () => {
                         inputMode: 'decimal', 
                         pattern: '[0-9].*' 
                       }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
                       onValueChange={(values, sourceInfo) => {
                         setInsVars({
                           ...insVars, 
                           insulinToCarbRatio: values.floatValue as number,
                         });
+                      }}
+                      onFocus={event => {
+                        event.target.select();
                       }}
                       customInput={TextField} 
                       label="カーボ比" 
@@ -271,7 +270,7 @@ const Home: React.FC = () => {
                       type="text"
                       customInput={TextField} 
                       label="糖質インスリン" 
-                      variant="outlined" 
+                      variant="filled" 
                       fullWidth
                         />
                   </Grid>
@@ -307,14 +306,14 @@ const Home: React.FC = () => {
                             inputMode: 'numeric', 
                             pattern: '[0-9]*' 
                           }}
-                          onFocus={event => {
-                            event.target.select();
-                          }}
                           onValueChange={(values, sourceInfo) => {
                             setInsVars({
                               ...insVars, 
                               currentBGL: values.floatValue as number,
                             });
+                          }}
+                          onFocus={event => {
+                            event.target.select();
                           }}
                           customInput={TextField} 
                           label="食前血糖値" 
@@ -343,14 +342,14 @@ const Home: React.FC = () => {
                             inputMode: 'numeric', 
                             pattern: '[0-9]*' 
                           }}
-                          onFocus={event => {
-                            event.target.select();
-                          }}
                           onValueChange={(values, sourceInfo) => {
                             setInsVars({
                               ...insVars, 
                               targetBGL: values.floatValue as number,
                             });
+                          }}
+                          onFocus={event => {
+                            event.target.select();
                           }}
                           customInput={TextField} 
                           label="目標血糖値" 
@@ -381,14 +380,14 @@ const Home: React.FC = () => {
                         inputMode: 'numeric', 
                         pattern: '[0-9]*' 
                       }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
                       onValueChange={(values, sourceInfo) => {
                         setInsVars({
                           ...insVars, 
                           insulinSensitivityFactor: values.floatValue as number,
                         });
+                      }}
+                      onFocus={event => {
+                        event.target.select();
                       }}
                       customInput={TextField} 
                       label="インスリン効果比" 
@@ -421,7 +420,7 @@ const Home: React.FC = () => {
                       type="text"
                       customInput={TextField} 
                       label="補正インスリン" 
-                      variant="outlined" 
+                      variant="filled" 
                       fullWidth
                         />
                   </Grid>
@@ -444,7 +443,22 @@ const Home: React.FC = () => {
                     <NumericFormat 
                       id="carb_insulin2" 
                       value={insVars.carbInsulin}
-                      inputProps={{ readOnly: true }}
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale              
+                      inputProps={{ 
+                        inputMode: 'decimal', 
+                        pattern: '[0-9].*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          carbInsulin: values.floatValue as number,
+                        });
+                      }}
                       onFocus={event => {
                         event.target.select();
                       }}
@@ -466,7 +480,21 @@ const Home: React.FC = () => {
                     <NumericFormat 
                       id="correction_bolus_insulin2" 
                       value={insVars.correctionBolusInsulin}
-                      inputProps={{ readOnly: true }}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={true}
+                      decimalScale={2}
+                      fixedDecimalScale              
+                      inputProps={{ 
+                        inputMode: 'decimal', 
+                        pattern: '[0-9].*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          correctionBolusInsulin: values.floatValue as number,
+                        });
+                      }}
                       onFocus={event => {
                         event.target.select();
                       }}
@@ -502,7 +530,7 @@ const Home: React.FC = () => {
                       type="text"
                       customInput={TextField} 
                       label="合計インスリン" 
-                      variant="outlined" 
+                      variant="filled" 
                       fullWidth
                         />
                   </Grid>
