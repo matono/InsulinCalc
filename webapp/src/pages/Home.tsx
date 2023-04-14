@@ -43,23 +43,6 @@ interface InsulinVariables {
   totalInsulin: number;
 }
 
-/*
-const calculate = () => {
-  carbInsulin = mealCarbohydrates * insulinToCarbRatio;
-  console.log("carb:" + mealCarbohydrates);
-  console.log("insuline2Carb:" + insulinToCarbRatio);
-  console.log("carbInsulin:" + carbInsulin);
-
-  correctionBolusInsulin = (currentBGL - targetBGL) / insulinSensitivityFactor;
-  console.log("currentBGL:" + currentBGL);
-  console.log("targetBGL:" + targetBGL);
-  console.log("ISF:" + insulinSensitivityFactor);
-  console.log("correctionBolusInsulin:" + correctionBolusInsulin);
-
-  totalInsulin = carbInsulin + correctionBolusInsulin;
-  console.log("totalInsulin:" + totalInsulin);
-}
-*/
 
 const Home: React.FC = () => {  
   const [insVars, setInsVars] = useState<InsulinVariables>({
@@ -77,15 +60,34 @@ const Home: React.FC = () => {
     setInsVars(vars =>({
       ...vars, 
       carbInsulin: vars.mealCarbohydrates * vars.insulinToCarbRatio,
-      correctionBolusInsulin: (vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor,
-      totalInsulin: vars.carbInsulin + vars.correctionBolusInsulin,
     }));
+    //console.log(insVars);
   }, [
     insVars.mealCarbohydrates,
     insVars.insulinToCarbRatio,
+  ])
+
+  useEffect(() => {
+    setInsVars(vars =>({
+      ...vars, 
+      correctionBolusInsulin: (vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor,
+    }));
+    //console.log(insVars);
+  }, [
     insVars.currentBGL,
     insVars.targetBGL,
     insVars.insulinSensitivityFactor,
+  ])
+
+  useEffect(() => {
+    setInsVars(vars =>({
+      ...vars, 
+      totalInsulin: vars.carbInsulin + vars.correctionBolusInsulin,
+    }));
+    //console.log(insVars);
+  }, [
+    insVars.carbInsulin,
+    insVars.correctionBolusInsulin,
   ])
 
   return (
