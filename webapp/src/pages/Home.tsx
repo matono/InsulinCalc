@@ -1,11 +1,14 @@
 import React from 'react';
-import { Box, Container, Typography, TextField} from "@mui/material";
+import { Box, Paper, Container, Typography, TextField} from "@mui/material";
+import CssBaseline from '@mui/material/CssBaseline';
+
 import { Unstable_Grid2 as Grid } from '@mui/material'; // Grid version 2
 import '@fontsource/roboto';
 //import Item from '../components/Item';
 import { NumericFormat } from 'react-number-format';
 
-import { styled } from "@mui/material";
+import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+
 
 
 const Line = styled('div')(({ theme }) => ({
@@ -26,184 +29,216 @@ const Item = styled(Box)(({ theme }) => ({
   flex: 1,
 }));
 
+const theme = createTheme();
+
 const Home: React.FC = () => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    console.log({
+      email: data.get('email'),
+      password: data.get('password'),
+    });
+  };
+  
   return (
-    <Box sx={{padding: 3}}>
-      <Typography variant="h1" gutterBottom>インスリン</Typography>
+    <ThemeProvider theme={theme}>
+      
+      <Container component="main" maxWidth="xl">
+        <CssBaseline />
+        <Box
+          sx={{
+            mt: 5,
+            flexDirection: 'column',
+          }}
+        >
+          
+          <Typography component="h1" variant="h4" gutterBottom>インスリン</Typography>
 
-      <Box sx={{marginBottom: 10}}>
-        <Typography variant="h2" gutterBottom>補正インスリン</Typography>
+          <Paper component="form" onSubmit={handleSubmit} sx={{ mt: 3, p:2 }} >
+            <Typography component="h2" variant="h5" sx={{ mb: 3}}>糖質インスリン</Typography>
 
-        {/* 補正インスリン式 */}
-        {/* 左辺 */}
-        <Grid container xs={12}>
-          {/* 分子 */}
-          <Grid container xs={11} columns={11}>
-            <Grid xs={5}>
-              <NumericFormat 
-                id="current_BGL" 
-                label="食前血糖値" 
-                variant="outlined" 
-                value={100}
-                valueIsNumericString={true}
-                isAllowed={(values) => {
-                  const { floatValue } = values;
-                  if (floatValue) {
-                    return 0 < floatValue && floatValue < 1000;
-                  }
-                  return false;
-                }}
-                customInput={TextField} 
-                fullWidth
-                 />
+            {/* 糖質インスリン式 */}
+            {/* 左辺 */}
+            <Grid container columns={11}>
+              <Grid xs={5}>
+                <NumericFormat 
+                  id="meal_carbohydrates" 
+                  value={10.00}
+                  type="text"
+                  valueIsNumericString={true}
+                  decimalSeparator="."
+                  thousandSeparator=","
+                  allowNegative={false}
+                  decimalScale={2}
+                  fixedDecimalScale              
+                  inputProps={{ 
+                    inputMode: 'decimal', 
+                    pattern: '[0-9].*' 
+                  }}
+                  customInput={TextField} 
+                  label="カーボ数" 
+                  variant="outlined" 
+                  fullWidth
+                    />
+              </Grid>
+              
+              <Grid xs={1}>
+                <Item>
+                  <Typography variant="body1">x</Typography>
+                </Item>
+              </Grid>
+
+              <Grid xs={5}>
+                <NumericFormat 
+                  id="insulin_to_carb_ratio" 
+                  value={1.0}
+                  type="text"
+                  valueIsNumericString={true}
+                  decimalSeparator="."
+                  thousandSeparator=","
+                  allowNegative={false}
+                  decimalScale={1}
+                  fixedDecimalScale              
+                  inputProps={{ 
+                    inputMode: 'decimal', 
+                    pattern: '[0-9].*' 
+                  }}
+                  customInput={TextField} 
+                  label="カーボ比" 
+                  variant="outlined" 
+                  fullWidth
+                    />
+              </Grid>
+            </Grid>           
+
+            {/* =右辺 */}
+            <Grid container xs={12}>
+
+              {/* = */}
+              <Grid container xs={1}>
+                  <Item>
+                    <Typography variant="body1">=</Typography>
+                  </Item>
+              </Grid>
+
+              {/* 右辺 */}
+              <Grid container xs={10}>
+                  <Item>
+                    <Typography variant="body1">10.0</Typography>
+                  </Item>
+              </Grid>
             </Grid>
-            <Grid xs={1}>
-              <Item>
-                <Typography variant="body1">-</Typography>
-              </Item>
+          </Paper>
+
+
+
+          <Paper component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3, p:2 }}>
+           <Typography component="h2" variant="h5" sx={{ mb: 3}}>補正インスリン</Typography>
+
+            {/* 補正インスリン式 */}
+            {/* 左辺 */}
+            <Grid container columns={11}>
+              {/* 分子 */}
+              <Grid xs={5}>
+                <NumericFormat 
+                  id="current_BGL" 
+                  value={100}
+
+                  valueIsNumericString={true}
+                  decimalSeparator="."
+                  thousandSeparator=","
+                  allowNegative={false}
+                  decimalScale={0}
+                  fixedDecimalScale              
+                  inputProps={{ 
+                    inputMode: 'numeric', 
+                    pattern: '[0-9]*' 
+                  }}
+                  customInput={TextField} 
+                  label="食前血糖値" 
+                  variant="outlined" 
+                  fullWidth
+                    />
+              </Grid>
+              <Grid xs={1}>
+                <Item>
+                  <Typography variant="body1">-</Typography>
+                </Item>
+              </Grid>
+              <Grid xs={5}>
+                <NumericFormat 
+                  id="target_BGL" 
+                  value={120}
+
+                  valueIsNumericString={true}
+                  decimalSeparator="."
+                  thousandSeparator=","
+                  allowNegative={false}
+                  decimalScale={0}
+                  fixedDecimalScale              
+                  inputProps={{ 
+                    inputMode: 'numeric', 
+                    pattern: '[0-9]*' 
+                  }}
+                  customInput={TextField} 
+                  label="目標血糖値" 
+                  variant="outlined" 
+                  fullWidth
+                    />
+              </Grid>
+
+              {/* 分数線 */}
+              <Grid container xs={21}>
+                <Line></Line>
+              </Grid>      
+
+              {/* 分母 */}
+              <Grid container xs={21}>
+                <NumericFormat 
+                  id="insulin_sensitivity_factor" 
+                  value={80}
+
+                  valueIsNumericString={true}
+                  decimalSeparator="."
+                  thousandSeparator=","
+                  allowNegative={false}
+                  decimalScale={0}
+                  fixedDecimalScale              
+                  inputProps={{ 
+                    inputMode: 'numeric', 
+                    pattern: '[0-9]*' 
+                  }}
+                  customInput={TextField} 
+                  label="インスリン効果比" 
+                  variant="outlined" 
+                  fullWidth
+                    />
+              </Grid>
             </Grid>
-            <Grid xs={5}>
-              <NumericFormat 
-                id="target_BGL" 
-                label="目標血糖値" 
-                variant="outlined" 
-                value={120}
-                valueIsNumericString={true}
-                isAllowed={(values) => {
-                  const { floatValue } = values;
-                  if (floatValue) {
-                    return 0 < floatValue && floatValue < 1000;
-                  }
-                  return false;
-                }}
-                customInput={TextField} 
-                fullWidth
-                 />
+
+            {/* =右辺 */}
+            <Grid container xs={12}>
+
+              {/* = */}
+              <Grid container xs={1}>
+                  <Item>
+                    <Typography variant="body1">=</Typography>
+                  </Item>
+              </Grid>
+
+              {/* 右辺 */}
+              <Grid container xs={10}>
+                  <Item>
+                    <Typography variant="body1">1.0</Typography>
+                  </Item>
+              </Grid>
             </Grid>
-          </Grid>           
+          </Paper>
+        </Box>
+      </Container>
 
-          {/* 分数線 */}
-          <Grid container xs={11}>
-            <Grid xs={12}>
-              <Line></Line>
-            </Grid>
-          </Grid>      
-
-          {/* 分母 */}
-          <Grid container xs={11}>
-            <Grid xs={12}>
-              <NumericFormat 
-                id="insulin_sensitivity_factor" 
-                label="インスリン効果比" 
-                variant="outlined" 
-                value={80}
-                valueIsNumericString={true}
-                isAllowed={(values) => {
-                  const { floatValue } = values;
-                  if (floatValue) {
-                    return 0 < floatValue && floatValue < 1000;
-                  }
-                  return false;
-                }}
-                customInput={TextField} 
-                fullWidth
-                 />
-            </Grid>
-          </Grid>  
-        </Grid>
-
-        {/* =右辺 */}
-        <Grid container xsOffset={3} xs={9}>
-
-          {/* = */}
-          <Grid container xs={1}>
-              <Item>
-                <Typography variant="body1">=</Typography>
-              </Item>
-          </Grid>
-
-          {/* 右辺 */}
-          <Grid container xs={11}>
-              <Item>
-                <Typography variant="body1">1.0</Typography>
-              </Item>
-          </Grid>
-        </Grid>
-      </Box>
-
-      <Box sx={{marginBottom: 10}}>
-        <Typography variant="h2" gutterBottom>糖質インスリン</Typography>
-
-        {/* 糖質インスリン式 */}
-        {/* 左辺 */}
-        <Grid container xs={12}>
-          <Grid container xs={11} columns={11}>
-            <Grid xs={5}>
-              <NumericFormat 
-                id="meal_carbohydrates" 
-                label="カーボ数" 
-                variant="outlined" 
-                value={10.0}
-                valueIsNumericString={true}
-                allowedDecimalSeparators={['%']}
-                isAllowed={(values) => {
-                  const { floatValue } = values;
-                  if (floatValue) {
-                    return 0 < floatValue && floatValue < 1000;
-                  }
-                  return false;
-                }}
-                customInput={TextField} 
-                fullWidth
-                 />
-            </Grid>
-            <Grid xs={1}>
-              <Item>
-                <Typography variant="body1">x</Typography>
-              </Item>
-            </Grid>
-            <Grid xs={5}>
-              <NumericFormat 
-                id="insulin_to_carb_ratio" 
-                label="カーボ比" 
-                variant="outlined" 
-                value={10.0}
-                valueIsNumericString={true}
-                allowedDecimalSeparators={['%']}
-                isAllowed={(values) => {
-                  const { floatValue } = values;
-                  if (floatValue) {
-                    return 0 < floatValue && floatValue < 1000;
-                  }
-                  return false;
-                }}
-                customInput={TextField} 
-                fullWidth
-                 />
-            </Grid>
-          </Grid>           
-        </Grid>
-
-        {/* =右辺 */}
-        <Grid container xsOffset={3} xs={9}>
-
-          {/* = */}
-          <Grid container xs={1}>
-              <Item>
-                <Typography variant="body1">=</Typography>
-              </Item>
-          </Grid>
-
-          {/* 右辺 */}
-          <Grid container xs={11}>
-              <Item>
-                <Typography variant="body1">10.0</Typography>
-              </Item>
-          </Grid>
-        </Grid>
-      </Box>
-
-    </Box>
+    </ThemeProvider>
   );
 };
 
