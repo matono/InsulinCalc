@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useCookies } from "react-cookie";
+
 import { Box, Paper, Container, Typography, TextField} from "@mui/material";
 import Grid from '@mui/material/Grid';
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-
 import '@fontsource/roboto';
+
 import { NumericFormat } from 'react-number-format';
-
-//import Item from '../components/Item';
-
-
 
 
 const Line = styled('div')(({ theme }) => ({
@@ -43,17 +41,21 @@ interface InsulinVariables {
   totalInsulin: number;
 }
 
+const today = new Date(); 
+const cookieDate = new Date(today.setFullYear(today.getFullYear() + 1));
 
 const Home: React.FC = () => {  
+  const [cookies, setCookie, removeCookie] = useCookies();
+
   const [insVars, setInsVars] = useState<InsulinVariables>({
-    mealCarbohydrates: 10.0,
-    insulinToCarbRatio: 1.0,
-    carbInsulin: 0,
-    currentBGL: 100,
-    targetBGL: 120,
-    insulinSensitivityFactor: 80,
-    correctionBolusInsulin: 0,
-    totalInsulin: 0,
+    mealCarbohydrates: cookies.mealCarbohydrates != undefined? cookies.mealCarbohydrates : 10,
+    insulinToCarbRatio: cookies.insulinToCarbRatio != undefined? cookies.insulinToCarbRatio : 1.0,
+    carbInsulin: cookies.carbInsulin != undefined? cookies.carbInsulin : 0,
+    currentBGL: cookies.currentBGL != undefined? cookies.currentBGL : 100,
+    targetBGL: cookies.targetBGL != undefined? cookies.targetBGL : 120,
+    insulinSensitivityFactor: cookies.insulinSensitivityFactor != undefined? cookies.insulinSensitivityFactor : 80,
+    correctionBolusInsulin: cookies.correctionBolusInsulin != undefined? cookies.correctionBolusInsulin : 0,
+    totalInsulin: cookies.totalInsulin != undefined? cookies.totalInsulin : 0,
   });
 
   useEffect(() => {
@@ -61,7 +63,8 @@ const Home: React.FC = () => {
       ...vars, 
       carbInsulin: vars.mealCarbohydrates * vars.insulinToCarbRatio,
     }));
-    //console.log(insVars);
+    setCookie("mealCarbohydrates", insVars.mealCarbohydrates, { expires: cookieDate, path: '/' });
+    setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: cookieDate, path: '/' });
   }, [
     insVars.mealCarbohydrates,
     insVars.insulinToCarbRatio,
@@ -72,7 +75,9 @@ const Home: React.FC = () => {
       ...vars, 
       correctionBolusInsulin: (vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor,
     }));
-    //console.log(insVars);
+    setCookie("currentBGL", insVars.currentBGL, { expires: cookieDate, path: '/' });
+    setCookie("targetBGL", insVars.targetBGL, { expires: cookieDate, path: '/' });
+    setCookie("insulinSensitivityFactor", insVars.insulinSensitivityFactor, { expires: cookieDate, path: '/' });
   }, [
     insVars.currentBGL,
     insVars.targetBGL,
@@ -84,12 +89,18 @@ const Home: React.FC = () => {
       ...vars, 
       totalInsulin: vars.carbInsulin + vars.correctionBolusInsulin,
     }));
-    //console.log(insVars);
+    setCookie("carbInsulin", insVars.carbInsulin, { expires: cookieDate, path: '/' });
+    setCookie("correctionBolusInsulin", insVars.correctionBolusInsulin, { expires: cookieDate, path: '/' });
   }, [
     insVars.carbInsulin,
     insVars.correctionBolusInsulin,
   ])
 
+  useEffect(() => {
+    setCookie("totalInsulin", insVars.totalInsulin, { expires: cookieDate, path: '/' });
+  }, [
+    insVars.totalInsulin
+  ])
   return (
     <ThemeProvider theme={theme}>
       
