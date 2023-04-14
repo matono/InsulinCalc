@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Paper, Container, Typography, TextField} from "@mui/material";
-import CssBaseline from '@mui/material/CssBaseline';
-
-//import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import Grid from '@mui/material/Grid';
+import CssBaseline from '@mui/material/CssBaseline';
+import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+
 import '@fontsource/roboto';
-//import Item from '../components/Item';
 import { NumericFormat } from 'react-number-format';
 
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+//import Item from '../components/Item';
+
 
 
 
@@ -32,7 +32,62 @@ const Item = styled(Box)(({ theme }) => ({
 
 const theme = createTheme();
 
+interface InsulinVariables {
+  mealCarbohydrates: number;
+  insulinToCarbRatio: number;
+  carbInsulin: number;
+  currentBGL: number;
+  targetBGL: number;
+  insulinSensitivityFactor: number;
+  correctionBolusInsulin: number;
+  totalInsulin: number;
+}
+
+/*
+const calculate = () => {
+  carbInsulin = mealCarbohydrates * insulinToCarbRatio;
+  console.log("carb:" + mealCarbohydrates);
+  console.log("insuline2Carb:" + insulinToCarbRatio);
+  console.log("carbInsulin:" + carbInsulin);
+
+  correctionBolusInsulin = (currentBGL - targetBGL) / insulinSensitivityFactor;
+  console.log("currentBGL:" + currentBGL);
+  console.log("targetBGL:" + targetBGL);
+  console.log("ISF:" + insulinSensitivityFactor);
+  console.log("correctionBolusInsulin:" + correctionBolusInsulin);
+
+  totalInsulin = carbInsulin + correctionBolusInsulin;
+  console.log("totalInsulin:" + totalInsulin);
+}
+*/
+
 const Home: React.FC = () => {  
+  const [insVars, setInsVars] = useState<InsulinVariables>({
+    mealCarbohydrates: 10.0,
+    insulinToCarbRatio: 1.0,
+    carbInsulin: 0,
+    currentBGL: 100,
+    targetBGL: 120,
+    insulinSensitivityFactor: 80,
+    correctionBolusInsulin: 0,
+    totalInsulin: 0,
+  });
+
+  useEffect(() => {
+    setInsVars(vars =>({
+      ...vars, 
+      carbInsulin: vars.mealCarbohydrates * vars.insulinToCarbRatio,
+      correctionBolusInsulin: (vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor,
+      totalInsulin: vars.carbInsulin + vars.correctionBolusInsulin,
+    }));
+  }, [
+    insVars.mealCarbohydrates,
+    insVars.insulinToCarbRatio,
+    insVars.currentBGL,
+    insVars.targetBGL,
+    insVars.insulinSensitivityFactor,
+  ])
+
   return (
     <ThemeProvider theme={theme}>
       
@@ -40,14 +95,15 @@ const Home: React.FC = () => {
         <CssBaseline />
         <Box
           sx={{
-            mt: 5,
+            mt: 3,
+            mb: 3,
             flexDirection: 'column',
           }}
         >
           
-          <Typography component="h1" variant="body1" gutterBottom>インスリン</Typography>
+          <Typography component="h1" variant="body1"  sx={{ mb: 2}} >インスリン</Typography>
 
-          <Paper component="form" sx={{ mt: 3, p:2 }} >
+          <Paper component="form" sx={{ mb: 3, p:2 }} >
             <Typography component="h2" variant="h5" sx={{ mb: 3}}>糖質インスリン</Typography>
 
             {/* 糖質インスリン式 */}
@@ -55,10 +111,10 @@ const Home: React.FC = () => {
             <Grid container rowSpacing={2} columnSpacing={0}>
               <Grid item xs={12}>
                 <Grid container columns={11}>
-                  <Grid xs={5}>
+                  <Grid item xs={5}>
                     <NumericFormat 
                       id="meal_carbohydrates" 
-                      value={10.00}
+                      value={insVars.mealCarbohydrates}
                       type="text"
                       valueIsNumericString={true}
                       decimalSeparator="."
@@ -69,6 +125,12 @@ const Home: React.FC = () => {
                       inputProps={{ 
                         inputMode: 'decimal', 
                         pattern: '[0-9].*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                           ...insVars, 
+                           mealCarbohydrates: values.floatValue as number,
+                        });
                       }}
                       customInput={TextField} 
                       label="カーボ数" 
@@ -86,7 +148,7 @@ const Home: React.FC = () => {
                   <Grid item xs={5}>
                     <NumericFormat 
                       id="insulin_to_carb_ratio" 
-                      value={1.0}
+                      value={insVars.insulinToCarbRatio}
                       type="text"
                       valueIsNumericString={true}
                       decimalSeparator="."
@@ -97,6 +159,12 @@ const Home: React.FC = () => {
                       inputProps={{ 
                         inputMode: 'decimal', 
                         pattern: '[0-9].*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          insulinToCarbRatio: values.floatValue as number,
+                        });
                       }}
                       customInput={TextField} 
                       label="カーボ比" 
@@ -120,18 +188,9 @@ const Home: React.FC = () => {
                   <Grid item xs={10}>
                     <NumericFormat 
                       id="carb_insulin" 
-                      value={1.0}
+                      value={insVars.carbInsulin}
+                      disabled
                       type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={1}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
                       customInput={TextField} 
                       label="糖質インスリン" 
                       variant="outlined" 
@@ -143,7 +202,7 @@ const Home: React.FC = () => {
             </Grid>
           </Paper>
 
-          <Paper component="form" sx={{ mt: 3, p:2 }}>
+          <Paper component="form" sx={{ mb: 3, p:2 }}>
            <Typography component="h2" variant="h5" sx={{ mb: 3}}>補正インスリン</Typography>
 
             {/* 補正インスリン式 */}
@@ -159,8 +218,7 @@ const Home: React.FC = () => {
                       <Grid item xs={5}>
                         <NumericFormat 
                           id="current_BGL" 
-                          value={100}
-
+                          value={insVars.currentBGL}
                           valueIsNumericString={true}
                           decimalSeparator="."
                           thousandSeparator=","
@@ -170,6 +228,12 @@ const Home: React.FC = () => {
                           inputProps={{ 
                             inputMode: 'numeric', 
                             pattern: '[0-9]*' 
+                          }}
+                          onValueChange={(values, sourceInfo) => {
+                            setInsVars({
+                              ...insVars, 
+                              currentBGL: values.floatValue as number,
+                            });
                           }}
                           customInput={TextField} 
                           label="食前血糖値" 
@@ -187,8 +251,7 @@ const Home: React.FC = () => {
                       <Grid item xs={5}>
                         <NumericFormat 
                           id="target_BGL" 
-                          value={120}
-
+                          value={insVars.targetBGL}
                           valueIsNumericString={true}
                           decimalSeparator="."
                           thousandSeparator=","
@@ -198,6 +261,12 @@ const Home: React.FC = () => {
                           inputProps={{ 
                             inputMode: 'numeric', 
                             pattern: '[0-9]*' 
+                          }}
+                          onValueChange={(values, sourceInfo) => {
+                            setInsVars({
+                              ...insVars, 
+                              targetBGL: values.floatValue as number,
+                            });
                           }}
                           customInput={TextField} 
                           label="目標血糖値" 
@@ -217,8 +286,7 @@ const Home: React.FC = () => {
                   <Grid item xs={12}>
                     <NumericFormat 
                       id="insulin_sensitivity_factor" 
-                      value={80}
-
+                      value={insVars.insulinSensitivityFactor}
                       valueIsNumericString={true}
                       decimalSeparator="."
                       thousandSeparator=","
@@ -228,6 +296,12 @@ const Home: React.FC = () => {
                       inputProps={{ 
                         inputMode: 'numeric', 
                         pattern: '[0-9]*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          insulinSensitivityFactor: values.floatValue as number,
+                        });
                       }}
                       customInput={TextField} 
                       label="インスリン効果比" 
@@ -252,18 +326,9 @@ const Home: React.FC = () => {
                   <Grid item xs={10}>
                     <NumericFormat 
                       id="correction_bolus_insulin" 
-                      value={1.0}
+                      value={insVars.correctionBolusInsulin}
+                      disabled
                       type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={1}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
                       customInput={TextField} 
                       label="補正インスリン" 
                       variant="outlined" 
@@ -277,30 +342,20 @@ const Home: React.FC = () => {
 
           
 
-          <Paper component="form" sx={{ mt: 3, p:2 }} >
+          <Paper component="form" sx={{ mb: 3, p:2 }} >
             <Typography component="h2" variant="h5" sx={{ mb: 3}}>合計インスリン</Typography>
-
 
             {/* 合計インスリン式 */}
             <Grid container rowSpacing={2} columnSpacing={0}>
               {/* 左辺 */}
               <Grid item xs={12}>
                 <Grid container columns={11}>
-                  <Grid xs={5}>
+                  <Grid item xs={5}>
                     <NumericFormat 
-                      id="meal_carbohydrates" 
-                      value={10.00}
+                      id="carb_insulin2" 
+                      value={insVars.carbInsulin}
+                      disabled
                       type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={2}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
                       customInput={TextField} 
                       label="糖質インスリン" 
                       variant="outlined" 
@@ -316,19 +371,10 @@ const Home: React.FC = () => {
 
                   <Grid item xs={5}>
                     <NumericFormat 
-                      id="insulin_to_carb_ratio" 
-                      value={1.0}
+                      id="correction_bolus_insulin2" 
+                      value={insVars.correctionBolusInsulin}
+                      disabled
                       type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={1}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
                       customInput={TextField} 
                       label="補正インスリン" 
                       variant="outlined" 
@@ -352,18 +398,9 @@ const Home: React.FC = () => {
                   <Grid item xs={10}>
                     <NumericFormat 
                       id="total_insulin" 
-                      value={1.0}
+                      value={insVars.totalInsulin}
+                      disabled
                       type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={1}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
                       customInput={TextField} 
                       label="合計インスリン" 
                       variant="outlined" 
