@@ -48,7 +48,9 @@ const plusYear = new Date(today.setFullYear(today.getFullYear() + 1));
 const plusHour = new Date(today.setHours(today.getHours() + 1));
 
 const Round = (value: number, base: number) => {
-  return Math.round(value * base) / base;
+  const pow = (10 ** base);
+  console.log(value, pow)
+  return Math.round(value * pow) / pow;
 }
 
 const Home: React.FC = () => {  
