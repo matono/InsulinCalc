@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from "react-cookie";
 
-import { Box, Paper, Container, Typography, TextField} from "@mui/material";
+import { Box, Paper, Container, Typography, TextField } from "@mui/material";
+import { InputAdornment, IconButton } from "@mui/material";
+import { AddCircle, RemoveCircle }  from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
@@ -42,20 +44,47 @@ interface InsulinVariables {
 }
 
 const today = new Date(); 
-const cookieDate = new Date(today.setFullYear(today.getFullYear() + 1));
+const plusYear = new Date(today.setFullYear(today.getFullYear() + 1));
+const plusHour = new Date(today.setHours(today.getHours() + 1));
 
 const Home: React.FC = () => {  
+  const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
   const [cookies, setCookie, removeCookie] = useCookies();
 
+  const [mealCarbs, setMealCarbs] = useState([0]);
+  const changeMealCarbs = (index: number, value: number) => {
+    const data = [...mealCarbs];
+    data[index] = value;
+    setMealCarbs(data);
+  }
+  const addMeal = () => {
+    setMealCarbs([...mealCarbs, 0]) 
+  }
+  const deleteMeal = (index: number) => {
+    const data = [...mealCarbs];
+    data.splice(index, 1);
+    setMealCarbs(data);
+  }
+  useEffect(() => {
+    const totalMeal =  mealCarbs.reduce((sum, element) => sum + element, 0);
+    setInsVars(vars =>({
+      ...vars, 
+      mealCarbohydrates: totalMeal,
+    }));
+  }, [mealCarbs])
+
   const [insVars, setInsVars] = useState<InsulinVariables>({
-    mealCarbohydrates: cookies.mealCarbohydrates != undefined? cookies.mealCarbohydrates : 10,
+    mealCarbohydrates: 0,
     insulinToCarbRatio: cookies.insulinToCarbRatio != undefined? cookies.insulinToCarbRatio : 1.0,
-    carbInsulin: cookies.carbInsulin != undefined? cookies.carbInsulin : 0,
+    carbInsulin: 0,
     currentBGL: cookies.currentBGL != undefined? cookies.currentBGL : 100,
     targetBGL: cookies.targetBGL != undefined? cookies.targetBGL : 120,
     insulinSensitivityFactor: cookies.insulinSensitivityFactor != undefined? cookies.insulinSensitivityFactor : 80,
-    correctionBolusInsulin: cookies.correctionBolusInsulin != undefined? cookies.correctionBolusInsulin : 0,
-    totalInsulin: cookies.totalInsulin != undefined? cookies.totalInsulin : 0,
+    correctionBolusInsulin: 0,
+    totalInsulin: 0,
   });
 
   useEffect(() => {
@@ -63,8 +92,7 @@ const Home: React.FC = () => {
       ...vars, 
       carbInsulin: vars.mealCarbohydrates * vars.insulinToCarbRatio,
     }));
-    setCookie("mealCarbohydrates", insVars.mealCarbohydrates, { expires: cookieDate, path: '/' });
-    setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: cookieDate, path: '/' });
+    setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: plusYear, path: '/' });
   }, [
     insVars.mealCarbohydrates,
     insVars.insulinToCarbRatio,
@@ -75,9 +103,9 @@ const Home: React.FC = () => {
       ...vars, 
       correctionBolusInsulin: (vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor,
     }));
-    setCookie("currentBGL", insVars.currentBGL, { expires: cookieDate, path: '/' });
-    setCookie("targetBGL", insVars.targetBGL, { expires: cookieDate, path: '/' });
-    setCookie("insulinSensitivityFactor", insVars.insulinSensitivityFactor, { expires: cookieDate, path: '/' });
+    setCookie("currentBGL", insVars.currentBGL, { expires: plusYear, path: '/' });
+    setCookie("targetBGL", insVars.targetBGL, { expires: plusYear, path: '/' });
+    setCookie("insulinSensitivityFactor", insVars.insulinSensitivityFactor, { expires: plusYear, path: '/' });
   }, [
     insVars.currentBGL,
     insVars.targetBGL,
@@ -89,18 +117,11 @@ const Home: React.FC = () => {
       ...vars, 
       totalInsulin: vars.carbInsulin + vars.correctionBolusInsulin,
     }));
-    setCookie("carbInsulin", insVars.carbInsulin, { expires: cookieDate, path: '/' });
-    setCookie("correctionBolusInsulin", insVars.correctionBolusInsulin, { expires: cookieDate, path: '/' });
   }, [
     insVars.carbInsulin,
     insVars.correctionBolusInsulin,
   ])
 
-  useEffect(() => {
-    setCookie("totalInsulin", insVars.totalInsulin, { expires: cookieDate, path: '/' });
-  }, [
-    insVars.totalInsulin
-  ])
   return (
     <ThemeProvider theme={theme}>
       
@@ -125,34 +146,62 @@ const Home: React.FC = () => {
               <Grid item xs={12}>
                 <Grid container columns={11}>
                   <Grid item xs={5}>
-                    <NumericFormat 
-                      id="meal_carbohydrates" 
-                      value={insVars.mealCarbohydrates}
-                      type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={2}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
-                      onValueChange={(values, sourceInfo) => {
-                        setInsVars({
-                           ...insVars, 
-                           mealCarbohydrates: values.floatValue as number,
-                        });
-                      }}
-                      customInput={TextField} 
-                      label="カーボ数" 
-                      variant="outlined" 
-                      fullWidth
-                        />
+                    <Grid container rowSpacing={1}>
+                      {
+                        mealCarbs.map((input, index) => {
+                          return (
+                            <Grid item xs={12} key={index}>
+                              <NumericFormat 
+                                id="meal_carbohydrates" 
+                                value={mealCarbs[index]}
+                                type="text"
+                                valueIsNumericString={true}
+                                decimalSeparator="."
+                                thousandSeparator=","
+                                allowNegative={false}
+                                decimalScale={2}
+                                fixedDecimalScale              
+                                inputProps={{ 
+                                  inputMode: 'decimal', 
+                                  pattern: '[0-9].*' 
+                                }}
+                                onFocus={event => {
+                                  event.target.select();
+                                }}
+                                onValueChange={(values, sourceInfo) => {
+                                  changeMealCarbs(index, values.floatValue as number)
+                                }}
+                                InputProps={{
+                                  endAdornment:
+                                    <InputAdornment position="end">
+                                      { index == (mealCarbs.length - 1) &&
+                                        <IconButton
+                                          onClick={addMeal}
+                                          onMouseDown={handleMouseDown}
+                                          edge="end"
+                                        >
+                                          <AddCircle />
+                                        </IconButton>
+                                      }
+                                      <IconButton
+                                        onClick={event => deleteMeal(index)}
+                                        onMouseDown={handleMouseDown}
+                                        edge="end"
+                                      >
+                                        <RemoveCircle />
+                                      </IconButton>
+                                    </InputAdornment>
+                                }}
+                                customInput={TextField} 
+                                label="カーボ数" 
+                                variant="outlined" 
+                                fullWidth
+                                  />
+                            </Grid>
+                          )
+                        })
+                      }
+                    </Grid>
                   </Grid>
                   
                   <Grid item xs={1}>
