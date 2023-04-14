@@ -54,7 +54,9 @@ const Home: React.FC = () => {
 
   const [cookies, setCookie, removeCookie] = useCookies();
 
-  const [mealCarbs, setMealCarbs] = useState([0]);
+  const [mealCarbs, setMealCarbs] = useState(
+    cookies.mealCarbs != undefined ? cookies.mealCarbs as number[]: [0]
+  );
   const changeMealCarbs = (index: number, value: number) => {
     const data = [...mealCarbs];
     data[index] = value;
@@ -70,6 +72,8 @@ const Home: React.FC = () => {
   }
   useEffect(() => {
     const totalMeal =  mealCarbs.reduce((sum, element) => sum + element, 0);
+    setCookie("mealCarbs", mealCarbs, { expires: plusHour, path: '/' });
+    
     setInsVars(vars =>({
       ...vars, 
       mealCarbohydrates: totalMeal,
