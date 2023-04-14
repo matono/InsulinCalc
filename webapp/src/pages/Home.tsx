@@ -47,6 +47,10 @@ const today = new Date();
 const plusYear = new Date(today.setFullYear(today.getFullYear() + 1));
 const plusHour = new Date(today.setHours(today.getHours() + 1));
 
+const Round = (value: number, base: number) => {
+  return Math.round(value * base) / base;
+}
+
 const Home: React.FC = () => {  
   const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -94,7 +98,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     setInsVars(vars =>({
       ...vars, 
-      carbInsulin: vars.mealCarbohydrates * vars.insulinToCarbRatio,
+      carbInsulin: Round(vars.mealCarbohydrates * vars.insulinToCarbRatio, 2),
     }));
     setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: plusYear, path: '/' });
   }, [
@@ -105,7 +109,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     setInsVars(vars =>({
       ...vars, 
-      correctionBolusInsulin: (vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor,
+      correctionBolusInsulin: Round((vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor, 2),
     }));
     setCookie("currentBGL", insVars.currentBGL, { expires: plusYear, path: '/' });
     setCookie("targetBGL", insVars.targetBGL, { expires: plusYear, path: '/' });
@@ -119,7 +123,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     setInsVars(vars =>({
       ...vars, 
-      totalInsulin: vars.carbInsulin + vars.correctionBolusInsulin,
+      totalInsulin: Round(vars.carbInsulin + vars.correctionBolusInsulin, 2),
     }));
   }, [
     insVars.carbInsulin,
