@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useCookies } from "react-cookie";
 
 import { Box, Paper, Container, Typography, TextField } from "@mui/material";
-import { InputAdornment, IconButton } from "@mui/material";
-import { AddCircle, RemoveCircle }  from '@mui/icons-material';
+import { InputAdornment, IconButton, Fab } from "@mui/material";
+import { Add, RemoveCircle }  from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
@@ -134,11 +134,19 @@ const Home: React.FC = () => {
             flexDirection: 'column',
           }}
         >
-          
           <Typography component="h1" variant="body1"  sx={{ mb: 2}} >インスリン</Typography>
-
-          <Paper component="form" sx={{ mb: 3, p:2 }} >
-            <Typography component="h2" variant="h5" sx={{ mb: 3}}>糖質インスリン</Typography>
+          
+          <Paper component="form" sx={{ mb: 3, p:2 }}>
+            <Grid container direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3}}>
+              <Grid item xs={6}>
+                <Typography component="h2" variant="h5" >糖質インスリン</Typography>
+              </Grid>
+              <Grid item xs={2}>    
+                <Fab size="medium" color="primary" aria-label="add" onClick={addMeal} onMouseDown={handleMouseDown} >
+                  <Add />
+                </Fab>
+              </Grid>
+            </Grid>
 
             {/* 糖質インスリン式 */}
             {/* 左辺 */}
@@ -174,19 +182,11 @@ const Home: React.FC = () => {
                                 InputProps={{
                                   endAdornment:
                                     <InputAdornment position="end">
-                                      { index == (mealCarbs.length - 1) &&
-                                        <IconButton
-                                          onClick={addMeal}
-                                          onMouseDown={handleMouseDown}
-                                          edge="end"
-                                        >
-                                          <AddCircle />
-                                        </IconButton>
-                                      }
                                       <IconButton
                                         onClick={event => deleteMeal(index)}
                                         onMouseDown={handleMouseDown}
                                         edge="end"
+                                        color="error"
                                       >
                                         <RemoveCircle />
                                       </IconButton>
