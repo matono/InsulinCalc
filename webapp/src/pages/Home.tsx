@@ -159,7 +159,165 @@ const Home: React.FC = () => {
             flexDirection: 'column',
           }}
         >
-          
+
+          {/* 補正インスリン */}
+          <Paper component="form" sx={{ mb: 3, p:2 }}>
+           <Typography component="h2" variant="h5" sx={{ mb: 3}}>補正インスリン</Typography>
+
+            {/* 補正インスリン式 */}
+            <Grid container rowSpacing={2} columnSpacing={0}>
+              {/* 左辺 */}
+              <Grid item xs={12}>
+                
+                {/* 分数 */}
+                <Grid container>
+                  {/* 分子 */}
+                  <Grid item xs={12}>
+                    <Grid container columns={11}>
+                      <Grid item xs={5}>
+                        <NumericFormat 
+                          id="current_BGL" 
+                          value={insVars.currentBGL}
+                          valueIsNumericString={true}
+                          decimalSeparator="."
+                          thousandSeparator=","
+                          allowNegative={false}
+                          decimalScale={0}
+                          fixedDecimalScale              
+                          inputProps={{ 
+                            inputMode: 'numeric', 
+                            pattern: '[0-9]*' 
+                          }}
+                          onValueChange={(values, sourceInfo) => {
+                            setInsVars({
+                              ...insVars, 
+                              currentBGL: values.floatValue as number,
+                            });
+                          }}
+                          onFocus={event => {
+                            event.target.select();
+                          }}
+                          customInput={TextField} 
+                          label="食前血糖値" 
+                          variant="outlined" 
+                          fullWidth
+                            />
+                      </Grid>
+
+                      <Grid item xs={1}>
+                        <Item>
+                          <Typography variant="body1">-</Typography>
+                        </Item>
+                      </Grid>
+
+                      <Grid item xs={5}>
+                        <NumericFormat 
+                          id="target_BGL" 
+                          value={insVars.targetBGL}
+                          valueIsNumericString={true}
+                          decimalSeparator="."
+                          thousandSeparator=","
+                          allowNegative={false}
+                          decimalScale={0}
+                          fixedDecimalScale              
+                          inputProps={{ 
+                            inputMode: 'numeric', 
+                            pattern: '[0-9]*' 
+                          }}
+                          onValueChange={(values, sourceInfo) => {
+                            setInsVars({
+                              ...insVars, 
+                              targetBGL: values.floatValue as number,
+                            });
+                          }}
+                          onFocus={event => {
+                            event.target.select();
+                          }}
+                          customInput={TextField} 
+                          label="目標血糖値" 
+                          variant="outlined" 
+                          fullWidth
+                            />
+                      </Grid>
+                    </Grid>
+                  </Grid>
+
+                  {/* 分数線 */}
+                  <Grid item xs={12}>
+                    <Line></Line>
+                  </Grid>      
+
+                  {/* 分母 */}
+                  <Grid item xs={12}>
+                    <NumericFormat 
+                      id="insulin_sensitivity_factor" 
+                      value={insVars.insulinSensitivityFactor}
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={0}
+                      fixedDecimalScale              
+                      inputProps={{ 
+                        inputMode: 'numeric', 
+                        pattern: '[0-9]*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          insulinSensitivityFactor: values.floatValue as number,
+                        });
+                      }}
+                      onFocus={event => {
+                        event.target.select();
+                      }}
+                      customInput={TextField} 
+                      label="インスリン効果比" 
+                      variant="outlined" 
+                      fullWidth
+                        />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {/* =右辺 */}
+              <Grid item xs={12}>
+                <Grid container columns={11}>
+                  {/* = */}
+                  <Grid item xs={1}>
+                    <Item>
+                      <Typography variant="body1">=</Typography>
+                    </Item>
+                  </Grid>
+
+                  {/* 右辺 */}
+                  <Grid item xs={10}>
+                    <NumericFormat 
+                      id="correction_bolus_insulin" 
+                      value={insVars.correctionBolusInsulin}
+                      inputProps={{ readOnly: true }}
+                      type="text"
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale
+                      onFocus={event => {
+                        event.target.select();
+                      }}
+                      customInput={TextField} 
+                      label="補正インスリン" 
+                      variant="filled" 
+                      fullWidth
+                        />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* 糖質インスリン */}
           <Paper component="form" sx={{ mb: 3, p:2 }}>
             <Grid container direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3}}>
               <Grid item xs={12}>
@@ -335,162 +493,7 @@ const Home: React.FC = () => {
             </Grid>
           </Paper>
 
-          <Paper component="form" sx={{ mb: 3, p:2 }}>
-           <Typography component="h2" variant="h5" sx={{ mb: 3}}>補正インスリン</Typography>
-
-            {/* 補正インスリン式 */}
-            <Grid container rowSpacing={2} columnSpacing={0}>
-              {/* 左辺 */}
-              <Grid item xs={12}>
-                
-                {/* 分数 */}
-                <Grid container>
-                  {/* 分子 */}
-                  <Grid item xs={12}>
-                    <Grid container columns={11}>
-                      <Grid item xs={5}>
-                        <NumericFormat 
-                          id="current_BGL" 
-                          value={insVars.currentBGL}
-                          valueIsNumericString={true}
-                          decimalSeparator="."
-                          thousandSeparator=","
-                          allowNegative={false}
-                          decimalScale={0}
-                          fixedDecimalScale              
-                          inputProps={{ 
-                            inputMode: 'numeric', 
-                            pattern: '[0-9]*' 
-                          }}
-                          onValueChange={(values, sourceInfo) => {
-                            setInsVars({
-                              ...insVars, 
-                              currentBGL: values.floatValue as number,
-                            });
-                          }}
-                          onFocus={event => {
-                            event.target.select();
-                          }}
-                          customInput={TextField} 
-                          label="食前血糖値" 
-                          variant="outlined" 
-                          fullWidth
-                            />
-                      </Grid>
-
-                      <Grid item xs={1}>
-                        <Item>
-                          <Typography variant="body1">-</Typography>
-                        </Item>
-                      </Grid>
-
-                      <Grid item xs={5}>
-                        <NumericFormat 
-                          id="target_BGL" 
-                          value={insVars.targetBGL}
-                          valueIsNumericString={true}
-                          decimalSeparator="."
-                          thousandSeparator=","
-                          allowNegative={false}
-                          decimalScale={0}
-                          fixedDecimalScale              
-                          inputProps={{ 
-                            inputMode: 'numeric', 
-                            pattern: '[0-9]*' 
-                          }}
-                          onValueChange={(values, sourceInfo) => {
-                            setInsVars({
-                              ...insVars, 
-                              targetBGL: values.floatValue as number,
-                            });
-                          }}
-                          onFocus={event => {
-                            event.target.select();
-                          }}
-                          customInput={TextField} 
-                          label="目標血糖値" 
-                          variant="outlined" 
-                          fullWidth
-                            />
-                      </Grid>
-                    </Grid>
-                  </Grid>
-
-                  {/* 分数線 */}
-                  <Grid item xs={12}>
-                    <Line></Line>
-                  </Grid>      
-
-                  {/* 分母 */}
-                  <Grid item xs={12}>
-                    <NumericFormat 
-                      id="insulin_sensitivity_factor" 
-                      value={insVars.insulinSensitivityFactor}
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={0}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'numeric', 
-                        pattern: '[0-9]*' 
-                      }}
-                      onValueChange={(values, sourceInfo) => {
-                        setInsVars({
-                          ...insVars, 
-                          insulinSensitivityFactor: values.floatValue as number,
-                        });
-                      }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
-                      customInput={TextField} 
-                      label="インスリン効果比" 
-                      variant="outlined" 
-                      fullWidth
-                        />
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              {/* =右辺 */}
-              <Grid item xs={12}>
-                <Grid container columns={11}>
-                  {/* = */}
-                  <Grid item xs={1}>
-                    <Item>
-                      <Typography variant="body1">=</Typography>
-                    </Item>
-                  </Grid>
-
-                  {/* 右辺 */}
-                  <Grid item xs={10}>
-                    <NumericFormat 
-                      id="correction_bolus_insulin" 
-                      value={insVars.correctionBolusInsulin}
-                      inputProps={{ readOnly: true }}
-                      type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={2}
-                      fixedDecimalScale
-                      onFocus={event => {
-                        event.target.select();
-                      }}
-                      customInput={TextField} 
-                      label="補正インスリン" 
-                      variant="filled" 
-                      fullWidth
-                        />
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Paper>
-
+          {/* 計算ボタン */}
           <Box sx={{ mb: 3 }}>
             <Grid container direction="row" justifyContent="center" alignItems="center">
               <Grid item xs={12}>
@@ -531,14 +534,51 @@ const Home: React.FC = () => {
             </Grid>
           </Box>
 
+          {/* 合計インスリン式 */}
           <Paper component="form" sx={{ mb: 3, p:2 }} >
             <Typography component="h2" variant="h5" sx={{ mb: 3}}>合計インスリン</Typography>
-
-            {/* 合計インスリン式 */}
+  
             <Grid container rowSpacing={2} columnSpacing={0}>
               {/* 左辺 */}
               <Grid item xs={12}>
                 <Grid container columns={11}>
+
+                <Grid item xs={5}>
+                    <NumericFormat 
+                      id="correction_bolus_insulin2" 
+                      value={insVars.correctionBolusInsulin}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={true}
+                      decimalScale={2}
+                      fixedDecimalScale              
+                      inputProps={{ 
+                        inputMode: 'decimal', 
+                        pattern: '[0-9].*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          correctionBolusInsulin: values.floatValue as number,
+                        });
+                      }}
+                      onFocus={event => {
+                        event.target.select();
+                      }}
+                      type="text"
+                      customInput={TextField} 
+                      label="補正インスリン" 
+                      variant="outlined" 
+                      fullWidth
+                        />
+                  </Grid>
+                  
+                  <Grid item xs={1}>
+                    <Item>
+                      <Typography variant="body1">+</Typography>
+                    </Item>
+                  </Grid>
+
                   <Grid item xs={5}>
                     <NumericFormat 
                       id="carb_insulin2" 
@@ -570,41 +610,6 @@ const Home: React.FC = () => {
                         />
                   </Grid>
                   
-                  <Grid item xs={1}>
-                    <Item>
-                      <Typography variant="body1">+</Typography>
-                    </Item>
-                  </Grid>
-
-                  <Grid item xs={5}>
-                    <NumericFormat 
-                      id="correction_bolus_insulin2" 
-                      value={insVars.correctionBolusInsulin}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={true}
-                      decimalScale={2}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
-                      onValueChange={(values, sourceInfo) => {
-                        setInsVars({
-                          ...insVars, 
-                          correctionBolusInsulin: values.floatValue as number,
-                        });
-                      }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
-                      type="text"
-                      customInput={TextField} 
-                      label="補正インスリン" 
-                      variant="outlined" 
-                      fullWidth
-                        />
-                  </Grid>
                 </Grid>
               </Grid>  
 
