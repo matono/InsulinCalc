@@ -176,7 +176,7 @@ const Home: React.FC = () => {
             {/* 左辺 */}
             <Grid container rowSpacing={2} columnSpacing={0}>
               <Grid item xs={12}>
-                <Grid container columns={11}>
+                <Grid container columns={11}  direction="row" justifyContent="center" alignItems="flex-end">
                   <Grid item xs={5}>
                     <Grid container rowSpacing={1}>
                       {
@@ -184,7 +184,6 @@ const Home: React.FC = () => {
                           return (
                             <Grid item xs={12} key={index}>
                               <NumericFormat 
-                                id="meal_carbohydrates" 
                                 value={mealCarbs[index]}
                                 type="text"
                                 valueIsNumericString={true}
@@ -225,6 +224,28 @@ const Home: React.FC = () => {
                           )
                         })
                       }
+
+                      <Grid item xs={12}>
+                        <NumericFormat 
+                          id="meal_carbohydrates" 
+                          value={insVars.mealCarbohydrates}
+                          inputProps={{ readOnly: true }}
+                          type="text"
+                          valueIsNumericString={true}
+                          decimalSeparator="."
+                          thousandSeparator=","
+                          allowNegative={false}
+                          decimalScale={2}
+                          fixedDecimalScale
+                          onFocus={event => {
+                            event.target.select();
+                          }}
+                          customInput={TextField} 
+                          label="総カーボ数" 
+                          variant="filled" 
+                          fullWidth
+                            />
+                      </Grid> 
                     </Grid>
                   </Grid>
                   
@@ -283,6 +304,15 @@ const Home: React.FC = () => {
                       value={insVars.carbInsulin}
                       inputProps={{ readOnly: true }}
                       type="text"
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale
+                      onFocus={event => {
+                        event.target.select();
+                      }}
                       customInput={TextField} 
                       label="糖質インスリン" 
                       variant="filled" 
@@ -429,10 +459,16 @@ const Home: React.FC = () => {
                       id="correction_bolus_insulin" 
                       value={insVars.correctionBolusInsulin}
                       inputProps={{ readOnly: true }}
+                      type="text"
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale
                       onFocus={event => {
                         event.target.select();
                       }}
-                      type="text"
                       customInput={TextField} 
                       label="補正インスリン" 
                       variant="filled" 
@@ -577,10 +613,16 @@ const Home: React.FC = () => {
                       id="total_insulin" 
                       value={insVars.totalInsulin}
                       inputProps={{ readOnly: true }}
+                      type="text"
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale
                       onFocus={event => {
                         event.target.select();
                       }}
-                      type="text"
                       customInput={TextField} 
                       label="合計インスリン" 
                       variant="filled" 
