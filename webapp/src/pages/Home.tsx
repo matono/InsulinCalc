@@ -3,8 +3,8 @@ import { useCookies } from "react-cookie";
 
 import { Box, Button, Paper, Container, Modal, Typography, TextField } from "@mui/material";
 import { InputAdornment, IconButton, Fab } from "@mui/material";
-import Add from '@mui/icons-material/Add';
-import Remove   from '@mui/icons-material/RemoveCircle';
+import Add from '@mui/icons-material/AddCircle';
+import Remove from '@mui/icons-material/RemoveCircle';
 import Submit from '@mui/icons-material/Autorenew';
 import Grid from '@mui/material/Grid';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -162,13 +162,8 @@ const Home: React.FC = () => {
           
           <Paper component="form" sx={{ mb: 3, p:2 }}>
             <Grid container direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3}}>
-              <Grid item xs={10}>
+              <Grid item xs={12}>
                 <Typography component="h2" variant="h5" >糖質インスリン</Typography>
-              </Grid>
-              <Grid item xs={2}>    
-                <Fab size="medium" color="primary" aria-label="add" onClick={addMeal} onMouseDown={handleMouseDown} >
-                  <Add />
-                </Fab>
               </Grid>
             </Grid>
 
@@ -207,8 +202,9 @@ const Home: React.FC = () => {
                                         onMouseDown={handleMouseDown}
                                         edge="end"
                                         color="error"
+                                        size="large"
                                       >
-                                        <Remove />
+                                        <Remove fontSize="inherit" />
                                       </IconButton>
                                     </InputAdornment>
                                 }}
@@ -239,6 +235,20 @@ const Home: React.FC = () => {
                           fixedDecimalScale
                           onFocus={event => {
                             event.target.select();
+                          }}
+                          InputProps={{
+                            endAdornment:
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={addMeal}
+                                  onMouseDown={handleMouseDown}
+                                  edge="end"
+                                  color="primary"
+                                  size="large"
+                                >
+                                  <Add fontSize="inherit" />
+                                </IconButton>
+                              </InputAdornment>
                           }}
                           customInput={TextField} 
                           label="総カーボ数" 
