@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from "react-cookie";
 
-import { Box, Paper, Container, Typography, TextField} from "@mui/material";
+import { Box, Button, Paper, Container, Modal, Typography, TextField } from "@mui/material";
+import { InputAdornment, IconButton, Fab } from "@mui/material";
+import Add from '@mui/icons-material/AddCircle';
+import Remove from '@mui/icons-material/RemoveCircle';
+import Submit from '@mui/icons-material/Autorenew';
 import Grid from '@mui/material/Grid';
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import '@fontsource/roboto';
 
 import { NumericFormat } from 'react-number-format';
-
 
 const Line = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -28,6 +31,7 @@ const Item = styled(Box)(({ theme }) => ({
   flex: 1,
 }));
 
+
 const theme = createTheme();
 
 interface InsulinVariables {
@@ -42,65 +46,107 @@ interface InsulinVariables {
 }
 
 const today = new Date(); 
-const cookieDate = new Date(today.setFullYear(today.getFullYear() + 1));
+const plusYear = new Date(today.setFullYear(today.getFullYear() + 1));
+const plusHour = new Date(today.setHours(today.getHours() + 1));
+
+const Round = (value: number, base: number) => {
+  const pow = (10 ** base);
+  return Math.round(value * pow) / pow;
+}
 
 const Home: React.FC = () => {  
   const [cookies, setCookie, removeCookie] = useCookies();
+  const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const [mealCarbs, setMealCarbs] = useState(
+    cookies.mealCarbs != undefined ? cookies.mealCarbs as number[]: [0]
+  );
+  const changeMealCarbs = (index: number, value: number) => {
+    const data = [...mealCarbs];
+    data[index] = value;
+    setMealCarbs(data);
+  }
+  const addMeal = () => {
+    setMealCarbs([...mealCarbs, 0]) 
+  }
+  const deleteMeal = (index: number) => {
+    const data = [...mealCarbs];
+    data.splice(index, 1);
+    setMealCarbs(data);
+  }
+  useEffect(() => {
+    const totalMeal =  mealCarbs.reduce((sum, element) => sum + element, 0);
+    setCookie("mealCarbs", mealCarbs, { expires: plusHour, path: '/' });
+    setInsVars(vars =>({
+      ...vars, 
+      mealCarbohydrates: totalMeal,
+    }));
+  }, [mealCarbs])
 
   const [insVars, setInsVars] = useState<InsulinVariables>({
-    mealCarbohydrates: cookies.mealCarbohydrates != undefined? cookies.mealCarbohydrates : 10,
+    mealCarbohydrates: 0,
     insulinToCarbRatio: cookies.insulinToCarbRatio != undefined? cookies.insulinToCarbRatio : 1.0,
-    carbInsulin: cookies.carbInsulin != undefined? cookies.carbInsulin : 0,
+    carbInsulin: 0,
     currentBGL: cookies.currentBGL != undefined? cookies.currentBGL : 100,
     targetBGL: cookies.targetBGL != undefined? cookies.targetBGL : 120,
     insulinSensitivityFactor: cookies.insulinSensitivityFactor != undefined? cookies.insulinSensitivityFactor : 80,
-    correctionBolusInsulin: cookies.correctionBolusInsulin != undefined? cookies.correctionBolusInsulin : 0,
-    totalInsulin: cookies.totalInsulin != undefined? cookies.totalInsulin : 0,
+    correctionBolusInsulin: 0,
+    totalInsulin: 0,
   });
 
-  useEffect(() => {
-    setInsVars(vars =>({
-      ...vars, 
-      carbInsulin: vars.mealCarbohydrates * vars.insulinToCarbRatio,
-    }));
-    setCookie("mealCarbohydrates", insVars.mealCarbohydrates, { expires: cookieDate, path: '/' });
-    setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: cookieDate, path: '/' });
-  }, [
+  useEffect(() => calcCarbInsulin(insVars.mealCarbohydrates, insVars.insulinToCarbRatio), [
     insVars.mealCarbohydrates,
     insVars.insulinToCarbRatio,
   ])
-
-  useEffect(() => {
-    setInsVars(vars =>({
+  const calcCarbInsulin = (meal: number, ratio: number) => {
+    //console.log("calcCarbInsulin");
+    setInsVars(vars => ({
       ...vars, 
-      correctionBolusInsulin: (vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor,
+      carbInsulin: Round(meal * ratio, 2),
     }));
-    setCookie("currentBGL", insVars.currentBGL, { expires: cookieDate, path: '/' });
-    setCookie("targetBGL", insVars.targetBGL, { expires: cookieDate, path: '/' });
-    setCookie("insulinSensitivityFactor", insVars.insulinSensitivityFactor, { expires: cookieDate, path: '/' });
-  }, [
+    setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: plusYear, path: '/' });
+  }
+
+  useEffect(() => {calcCorrectionBolusInsulin(insVars.currentBGL, insVars.targetBGL, insVars.insulinSensitivityFactor)}, [
     insVars.currentBGL,
     insVars.targetBGL,
     insVars.insulinSensitivityFactor,
   ])
-
-  useEffect(() => {
-    setInsVars(vars =>({
+  const calcCorrectionBolusInsulin = (current: number, target: number, factor: number) => {
+    //console.log("calcCorrectionBolusInsulin")
+    setInsVars(vars => ({
       ...vars, 
-      totalInsulin: vars.carbInsulin + vars.correctionBolusInsulin,
+      correctionBolusInsulin: Round((current - target) / factor, 2),
     }));
-    setCookie("carbInsulin", insVars.carbInsulin, { expires: cookieDate, path: '/' });
-    setCookie("correctionBolusInsulin", insVars.correctionBolusInsulin, { expires: cookieDate, path: '/' });
-  }, [
+    setCookie("currentBGL", insVars.currentBGL, { expires: plusYear, path: '/' });
+    setCookie("targetBGL", insVars.targetBGL, { expires: plusYear, path: '/' });
+    setCookie("insulinSensitivityFactor", insVars.insulinSensitivityFactor, { expires: plusYear, path: '/' });
+  }
+
+  useEffect(() => {calcTotalInsulin(insVars.carbInsulin, insVars.correctionBolusInsulin)}, [
     insVars.carbInsulin,
     insVars.correctionBolusInsulin,
   ])
+  const calcTotalInsulin = (carb: number, bolus: number) => {
+    //console.log("calcTotalInsulin")
+    setInsVars(vars => ({
+      ...vars, 
+      totalInsulin: Round(carb + bolus, 2),
+    }));
+  }
+  
+  const [open, setOpen] = React.useState(false);
+  const handleClose = () => setOpen(false);
+  const handleOpen = () => {
+    //console.log("handleOpen")
+    calcCarbInsulin(insVars.mealCarbohydrates, insVars.insulinToCarbRatio);
+    calcCorrectionBolusInsulin(insVars.currentBGL, insVars.targetBGL, insVars.insulinSensitivityFactor);
+    calcTotalInsulin(insVars.carbInsulin, insVars.correctionBolusInsulin);
+    setOpen(true);
+  }
 
-  useEffect(() => {
-    setCookie("totalInsulin", insVars.totalInsulin, { expires: cookieDate, path: '/' });
-  }, [
-    insVars.totalInsulin
-  ])
   return (
     <ThemeProvider theme={theme}>
       
@@ -114,45 +160,104 @@ const Home: React.FC = () => {
           }}
         >
           
-          <Typography component="h1" variant="body1"  sx={{ mb: 2}} >インスリン</Typography>
-
-          <Paper component="form" sx={{ mb: 3, p:2 }} >
-            <Typography component="h2" variant="h5" sx={{ mb: 3}}>糖質インスリン</Typography>
+          <Paper component="form" sx={{ mb: 3, p:2 }}>
+            <Grid container direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3}}>
+              <Grid item xs={12}>
+                <Typography component="h2" variant="h5" >糖質インスリン</Typography>
+              </Grid>
+            </Grid>
 
             {/* 糖質インスリン式 */}
             {/* 左辺 */}
             <Grid container rowSpacing={2} columnSpacing={0}>
               <Grid item xs={12}>
-                <Grid container columns={11}>
+                <Grid container columns={11}  direction="row" justifyContent="center" alignItems="flex-end">
                   <Grid item xs={5}>
-                    <NumericFormat 
-                      id="meal_carbohydrates" 
-                      value={insVars.mealCarbohydrates}
-                      type="text"
-                      valueIsNumericString={true}
-                      decimalSeparator="."
-                      thousandSeparator=","
-                      allowNegative={false}
-                      decimalScale={2}
-                      fixedDecimalScale              
-                      inputProps={{ 
-                        inputMode: 'decimal', 
-                        pattern: '[0-9].*' 
-                      }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
-                      onValueChange={(values, sourceInfo) => {
-                        setInsVars({
-                           ...insVars, 
-                           mealCarbohydrates: values.floatValue as number,
-                        });
-                      }}
-                      customInput={TextField} 
-                      label="カーボ数" 
-                      variant="outlined" 
-                      fullWidth
-                        />
+                    <Grid container rowSpacing={1}>
+                      {
+                        mealCarbs.map((input, index) => {
+                          return (
+                            <Grid item xs={12} key={index}>
+                              <NumericFormat 
+                                value={mealCarbs[index]}
+                                type="text"
+                                valueIsNumericString={true}
+                                decimalSeparator="."
+                                thousandSeparator=","
+                                allowNegative={false}
+                                decimalScale={2}
+                                fixedDecimalScale              
+                                inputProps={{ 
+                                  inputMode: 'decimal', 
+                                  pattern: '[0-9].*' 
+                                }}
+                                onValueChange={(values, sourceInfo) => {
+                                  changeMealCarbs(index, values.floatValue as number)
+                                }}
+                                InputProps={{
+                                  endAdornment:
+                                    <InputAdornment position="end">
+                                      <IconButton
+                                        onClick={event => deleteMeal(index)}
+                                        onMouseDown={handleMouseDown}
+                                        edge="end"
+                                        color="error"
+                                        size="large"
+                                      >
+                                        <Remove />
+                                      </IconButton>
+                                    </InputAdornment>
+                                }}
+                                onFocus={event => {
+                                  event.target.select();
+                                }}
+                                customInput={TextField} 
+                                label="カーボ数" 
+                                variant="outlined" 
+                                fullWidth
+                                  />
+                            </Grid>
+                          )
+                        })
+                      }
+
+                      <Grid item xs={12}>
+                        <NumericFormat 
+                          id="meal_carbohydrates" 
+                          value={insVars.mealCarbohydrates}
+                          inputProps={{ readOnly: true }}
+                          type="text"
+                          valueIsNumericString={true}
+                          decimalSeparator="."
+                          thousandSeparator=","
+                          allowNegative={false}
+                          decimalScale={2}
+                          fixedDecimalScale
+                          onFocus={event => {
+                            event.target.select();
+                          }}
+                          InputProps={{
+                            endAdornment: 
+                              <InputAdornment position="end">
+                                <IconButton
+                                  sx={{pr:1.75}}
+                                  onClick={addMeal}
+                                  onMouseDown={handleMouseDown}
+                                  edge="end"
+                                  color="primary"
+                                  size="large"
+                                >
+                                  <Add />
+                                </IconButton>
+                              </InputAdornment>
+                          }}
+                          customInput={TextField} 
+                          label="総カーボ数" 
+                          variant="filled" 
+                          fullWidth
+                            />
+                      </Grid> 
+                    </Grid>
                   </Grid>
                   
                   <Grid item xs={1}>
@@ -176,14 +281,14 @@ const Home: React.FC = () => {
                         inputMode: 'decimal', 
                         pattern: '[0-9].*' 
                       }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
                       onValueChange={(values, sourceInfo) => {
                         setInsVars({
                           ...insVars, 
                           insulinToCarbRatio: values.floatValue as number,
                         });
+                      }}
+                      onFocus={event => {
+                        event.target.select();
                       }}
                       customInput={TextField} 
                       label="カーボ比" 
@@ -210,9 +315,18 @@ const Home: React.FC = () => {
                       value={insVars.carbInsulin}
                       inputProps={{ readOnly: true }}
                       type="text"
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale
+                      onFocus={event => {
+                        event.target.select();
+                      }}
                       customInput={TextField} 
                       label="糖質インスリン" 
-                      variant="outlined" 
+                      variant="filled" 
                       fullWidth
                         />
                   </Grid>
@@ -248,14 +362,14 @@ const Home: React.FC = () => {
                             inputMode: 'numeric', 
                             pattern: '[0-9]*' 
                           }}
-                          onFocus={event => {
-                            event.target.select();
-                          }}
                           onValueChange={(values, sourceInfo) => {
                             setInsVars({
                               ...insVars, 
                               currentBGL: values.floatValue as number,
                             });
+                          }}
+                          onFocus={event => {
+                            event.target.select();
                           }}
                           customInput={TextField} 
                           label="食前血糖値" 
@@ -284,14 +398,14 @@ const Home: React.FC = () => {
                             inputMode: 'numeric', 
                             pattern: '[0-9]*' 
                           }}
-                          onFocus={event => {
-                            event.target.select();
-                          }}
                           onValueChange={(values, sourceInfo) => {
                             setInsVars({
                               ...insVars, 
                               targetBGL: values.floatValue as number,
                             });
+                          }}
+                          onFocus={event => {
+                            event.target.select();
                           }}
                           customInput={TextField} 
                           label="目標血糖値" 
@@ -322,14 +436,14 @@ const Home: React.FC = () => {
                         inputMode: 'numeric', 
                         pattern: '[0-9]*' 
                       }}
-                      onFocus={event => {
-                        event.target.select();
-                      }}
                       onValueChange={(values, sourceInfo) => {
                         setInsVars({
                           ...insVars, 
                           insulinSensitivityFactor: values.floatValue as number,
                         });
+                      }}
+                      onFocus={event => {
+                        event.target.select();
                       }}
                       customInput={TextField} 
                       label="インスリン効果比" 
@@ -356,13 +470,19 @@ const Home: React.FC = () => {
                       id="correction_bolus_insulin" 
                       value={insVars.correctionBolusInsulin}
                       inputProps={{ readOnly: true }}
+                      type="text"
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale
                       onFocus={event => {
                         event.target.select();
                       }}
-                      type="text"
                       customInput={TextField} 
                       label="補正インスリン" 
-                      variant="outlined" 
+                      variant="filled" 
                       fullWidth
                         />
                   </Grid>
@@ -371,7 +491,45 @@ const Home: React.FC = () => {
             </Grid>
           </Paper>
 
-          
+          <Box sx={{ mb: 3 }}>
+            <Grid container direction="row" justifyContent="center" alignItems="center">
+              <Grid item xs={12}>
+                <Button 
+                  variant="contained" 
+                  startIcon={<Submit />} 
+                  size="large"
+                  fullWidth   
+                  onClick={handleOpen} >
+                  計算
+                </Button>
+                <Modal
+                  open={open}
+                  onClose={handleClose}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 400,
+                      bgcolor: 'background.paper',
+                      border: '2px solid #000',
+                      boxShadow: 24,
+                      p: 4,
+                  }}>
+                    <Typography id="modal-modal-title" variant="h6" component="h2">
+                      インスリン単位数
+                    </Typography>
+                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                      {insVars.totalInsulin}
+                    </Typography>
+                  </Box>
+                </Modal>
+              </Grid>
+            </Grid>
+          </Box>
 
           <Paper component="form" sx={{ mb: 3, p:2 }} >
             <Typography component="h2" variant="h5" sx={{ mb: 3}}>合計インスリン</Typography>
@@ -385,7 +543,22 @@ const Home: React.FC = () => {
                     <NumericFormat 
                       id="carb_insulin2" 
                       value={insVars.carbInsulin}
-                      inputProps={{ readOnly: true }}
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale              
+                      inputProps={{ 
+                        inputMode: 'decimal', 
+                        pattern: '[0-9].*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          carbInsulin: values.floatValue as number,
+                        });
+                      }}
                       onFocus={event => {
                         event.target.select();
                       }}
@@ -407,7 +580,21 @@ const Home: React.FC = () => {
                     <NumericFormat 
                       id="correction_bolus_insulin2" 
                       value={insVars.correctionBolusInsulin}
-                      inputProps={{ readOnly: true }}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={true}
+                      decimalScale={2}
+                      fixedDecimalScale              
+                      inputProps={{ 
+                        inputMode: 'decimal', 
+                        pattern: '[0-9].*' 
+                      }}
+                      onValueChange={(values, sourceInfo) => {
+                        setInsVars({
+                          ...insVars, 
+                          correctionBolusInsulin: values.floatValue as number,
+                        });
+                      }}
                       onFocus={event => {
                         event.target.select();
                       }}
@@ -437,13 +624,19 @@ const Home: React.FC = () => {
                       id="total_insulin" 
                       value={insVars.totalInsulin}
                       inputProps={{ readOnly: true }}
+                      type="text"
+                      valueIsNumericString={true}
+                      decimalSeparator="."
+                      thousandSeparator=","
+                      allowNegative={false}
+                      decimalScale={2}
+                      fixedDecimalScale
                       onFocus={event => {
                         event.target.select();
                       }}
-                      type="text"
                       customInput={TextField} 
                       label="合計インスリン" 
-                      variant="outlined" 
+                      variant="filled" 
                       fullWidth
                         />
                   </Grid>
