@@ -330,6 +330,7 @@ const Home: React.FC = () => {
             <Grid container rowSpacing={2} columnSpacing={0}>
               <Grid item xs={12}>
                 <Grid container columns={11}  direction="row" justifyContent="center" alignItems="flex-end">
+
                   <Grid item xs={5}>
                     <Grid container rowSpacing={1}>
                       {
@@ -526,7 +527,9 @@ const Home: React.FC = () => {
                       インスリン単位数
                     </Typography>
                     <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                      {insVars.totalInsulin}
+                      ( {insVars.currentBGL} - {insVars.targetBGL} ) / {insVars.insulinSensitivityFactor} + ({insVars.mealCarbohydrates} * {insVars.insulinToCarbRatio}) <br />
+                       = {insVars.correctionBolusInsulin} + {insVars.carbInsulin} <br />
+                       = {insVars.totalInsulin} &uuml;
                     </Typography>
                   </Box>
                 </Modal>
