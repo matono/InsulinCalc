@@ -204,7 +204,7 @@ const Home: React.FC = () => {
                                         color="error"
                                         size="large"
                                       >
-                                        <Remove fontSize="inherit" />
+                                        <Remove />
                                       </IconButton>
                                     </InputAdornment>
                                 }}
@@ -237,16 +237,17 @@ const Home: React.FC = () => {
                             event.target.select();
                           }}
                           InputProps={{
-                            endAdornment:
+                            endAdornment: 
                               <InputAdornment position="end">
                                 <IconButton
+                                  sx={{pr:1.75}}
                                   onClick={addMeal}
                                   onMouseDown={handleMouseDown}
                                   edge="end"
                                   color="primary"
                                   size="large"
                                 >
-                                  <Add fontSize="inherit" />
+                                  <Add />
                                 </IconButton>
                               </InputAdornment>
                           }}
