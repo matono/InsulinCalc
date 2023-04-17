@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from "react-cookie";
 
-import { Box, Paper, Container, Typography, TextField } from "@mui/material";
+import { Box, Button, Paper, Container, Modal, Typography, TextField } from "@mui/material";
 import { InputAdornment, IconButton, Fab } from "@mui/material";
-import { Add, RemoveCircle }  from '@mui/icons-material';
+import Add from '@mui/icons-material/Add';
+import Remove   from '@mui/icons-material/RemoveCircle';
+import Submit from '@mui/icons-material/Autorenew';
 import Grid from '@mui/material/Grid';
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import '@fontsource/roboto';
 
 import { NumericFormat } from 'react-number-format';
-
 
 const Line = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -29,6 +30,7 @@ const Item = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   flex: 1,
 }));
+
 
 const theme = createTheme();
 
@@ -53,11 +55,10 @@ const Round = (value: number, base: number) => {
 }
 
 const Home: React.FC = () => {  
+  const [cookies, setCookie, removeCookie] = useCookies();
   const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
-
-  const [cookies, setCookie, removeCookie] = useCookies();
 
   const [mealCarbs, setMealCarbs] = useState(
     cookies.mealCarbs != undefined ? cookies.mealCarbs as number[]: [0]
@@ -78,7 +79,6 @@ const Home: React.FC = () => {
   useEffect(() => {
     const totalMeal =  mealCarbs.reduce((sum, element) => sum + element, 0);
     setCookie("mealCarbs", mealCarbs, { expires: plusHour, path: '/' });
-    
     setInsVars(vars =>({
       ...vars, 
       mealCarbohydrates: totalMeal,
@@ -96,40 +96,56 @@ const Home: React.FC = () => {
     totalInsulin: 0,
   });
 
-  useEffect(() => {
-    setInsVars(vars =>({
-      ...vars, 
-      carbInsulin: Round(vars.mealCarbohydrates * vars.insulinToCarbRatio, 2),
-    }));
-    setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: plusYear, path: '/' });
-  }, [
+  useEffect(() => calcCarbInsulin(insVars.mealCarbohydrates, insVars.insulinToCarbRatio), [
     insVars.mealCarbohydrates,
     insVars.insulinToCarbRatio,
   ])
-
-  useEffect(() => {
-    setInsVars(vars =>({
+  const calcCarbInsulin = (meal: number, ratio: number) => {
+    //console.log("calcCarbInsulin");
+    setInsVars(vars => ({
       ...vars, 
-      correctionBolusInsulin: Round((vars.currentBGL - vars.targetBGL) / vars.insulinSensitivityFactor, 2),
+      carbInsulin: Round(meal * ratio, 2),
     }));
-    setCookie("currentBGL", insVars.currentBGL, { expires: plusYear, path: '/' });
-    setCookie("targetBGL", insVars.targetBGL, { expires: plusYear, path: '/' });
-    setCookie("insulinSensitivityFactor", insVars.insulinSensitivityFactor, { expires: plusYear, path: '/' });
-  }, [
+    setCookie("insulinToCarbRatio", insVars.insulinToCarbRatio, { expires: plusYear, path: '/' });
+  }
+
+  useEffect(() => {calcCorrectionBolusInsulin(insVars.currentBGL, insVars.targetBGL, insVars.insulinSensitivityFactor)}, [
     insVars.currentBGL,
     insVars.targetBGL,
     insVars.insulinSensitivityFactor,
   ])
-
-  useEffect(() => {
-    setInsVars(vars =>({
+  const calcCorrectionBolusInsulin = (current: number, target: number, factor: number) => {
+    //console.log("calcCorrectionBolusInsulin")
+    setInsVars(vars => ({
       ...vars, 
-      totalInsulin: Round(vars.carbInsulin + vars.correctionBolusInsulin, 2),
+      correctionBolusInsulin: Round((current - target) / factor, 2),
     }));
-  }, [
+    setCookie("currentBGL", insVars.currentBGL, { expires: plusYear, path: '/' });
+    setCookie("targetBGL", insVars.targetBGL, { expires: plusYear, path: '/' });
+    setCookie("insulinSensitivityFactor", insVars.insulinSensitivityFactor, { expires: plusYear, path: '/' });
+  }
+
+  useEffect(() => {calcTotalInsulin(insVars.carbInsulin, insVars.correctionBolusInsulin)}, [
     insVars.carbInsulin,
     insVars.correctionBolusInsulin,
   ])
+  const calcTotalInsulin = (carb: number, bolus: number) => {
+    //console.log("calcTotalInsulin")
+    setInsVars(vars => ({
+      ...vars, 
+      totalInsulin: Round(carb + bolus, 2),
+    }));
+  }
+  
+  const [open, setOpen] = React.useState(false);
+  const handleClose = () => setOpen(false);
+  const handleOpen = () => {
+    //console.log("handleOpen")
+    calcCarbInsulin(insVars.mealCarbohydrates, insVars.insulinToCarbRatio);
+    calcCorrectionBolusInsulin(insVars.currentBGL, insVars.targetBGL, insVars.insulinSensitivityFactor);
+    calcTotalInsulin(insVars.carbInsulin, insVars.correctionBolusInsulin);
+    setOpen(true);
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -143,11 +159,10 @@ const Home: React.FC = () => {
             flexDirection: 'column',
           }}
         >
-          <Typography component="h1" variant="body1"  sx={{ mb: 2}} >インスリン</Typography>
           
           <Paper component="form" sx={{ mb: 3, p:2 }}>
             <Grid container direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3}}>
-              <Grid item xs={6}>
+              <Grid item xs={10}>
                 <Typography component="h2" variant="h5" >糖質インスリン</Typography>
               </Grid>
               <Grid item xs={2}>    
@@ -194,7 +209,7 @@ const Home: React.FC = () => {
                                         edge="end"
                                         color="error"
                                       >
-                                        <RemoveCircle />
+                                        <Remove />
                                       </IconButton>
                                     </InputAdornment>
                                 }}
@@ -429,7 +444,45 @@ const Home: React.FC = () => {
             </Grid>
           </Paper>
 
-          
+          <Box sx={{ mb: 3 }}>
+            <Grid container direction="row" justifyContent="center" alignItems="center">
+              <Grid item xs={12}>
+                <Button 
+                  variant="contained" 
+                  startIcon={<Submit />} 
+                  size="large"
+                  fullWidth   
+                  onClick={handleOpen} >
+                  計算
+                </Button>
+                <Modal
+                  open={open}
+                  onClose={handleClose}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 400,
+                      bgcolor: 'background.paper',
+                      border: '2px solid #000',
+                      boxShadow: 24,
+                      p: 4,
+                  }}>
+                    <Typography id="modal-modal-title" variant="h6" component="h2">
+                      インスリン単位数
+                    </Typography>
+                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                      {insVars.totalInsulin}
+                    </Typography>
+                  </Box>
+                </Modal>
+              </Grid>
+            </Grid>
+          </Box>
 
           <Paper component="form" sx={{ mb: 3, p:2 }} >
             <Typography component="h2" variant="h5" sx={{ mb: 3}}>合計インスリン</Typography>
