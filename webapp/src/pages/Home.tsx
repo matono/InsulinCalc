@@ -45,6 +45,13 @@ interface InsulinVariables {
   totalInsulin: number;
 }
 
+interface InsulinToCarbRatio {
+  breakfast: number;
+  lunch: number;
+  snack: number;
+  dinner: number;
+}  
+
 const expireLong = () => {
   const time = new Date(); 
   time.setFullYear(time.getFullYear() + 1);
@@ -183,7 +190,7 @@ const Home: React.FC = () => {
     setOpen(true);
   }
 
-  const [carbRatio, setCarbRatio] = React.useState({
+  const [carbRatio, setCarbRatio] = useState<InsulinToCarbRatio>({
     breakfast: cookies.insulinToCarbRatio_breakfast != undefined? cookies.insulinToCarbRatio_breakfast : 1.0,
     lunch: cookies.insulinToCarbRatio_lunch != undefined? cookies.insulinToCarbRatio_lunch : 1.0,
     snack: cookies.insulinToCarbRatio_snack != undefined? cookies.insulinToCarbRatio_snack : 1.0,
@@ -394,8 +401,16 @@ const Home: React.FC = () => {
                           breakfast: value
                         });
                         setCookie("insulinToCarbRatio_breakfast", value, { expires: expireLong(), path: '/' });
+                        setInsVars({
+                          ...insVars, 
+                          insulinToCarbRatio: value,
+                        });
                       }}
                       onFocus={event => {
+                        setInsVars({
+                          ...insVars,
+                          insulinToCarbRatio: carbRatio.breakfast
+                        });
                         event.target.select();
                       }}
                       customInput={TextField} 
@@ -425,8 +440,16 @@ const Home: React.FC = () => {
                           lunch: value
                         });
                         setCookie("insulinToCarbRatio_lunch", value, { expires: expireLong(), path: '/' });
+                        setInsVars({
+                          ...insVars, 
+                          insulinToCarbRatio: value,
+                        });
                       }}
                       onFocus={event => {
+                        setInsVars({
+                          ...insVars,
+                          insulinToCarbRatio: carbRatio.lunch
+                        });
                         event.target.select();
                       }}
                       customInput={TextField} 
@@ -456,8 +479,16 @@ const Home: React.FC = () => {
                           snack: value
                         });
                         setCookie("insulinToCarbRatio_snack", value, { expires: expireLong(), path: '/' });
+                        setInsVars({
+                          ...insVars, 
+                          insulinToCarbRatio: value,
+                        });
                       }}
                       onFocus={event => {
+                        setInsVars({
+                          ...insVars,
+                          insulinToCarbRatio: carbRatio.snack
+                        });
                         event.target.select();
                       }}
                       customInput={TextField} 
@@ -487,8 +518,16 @@ const Home: React.FC = () => {
                           dinner: value
                         });
                         setCookie("insulinToCarbRatio_dinner", value, { expires: expireLong(), path: '/' });
+                        setInsVars({
+                          ...insVars, 
+                          insulinToCarbRatio: value,
+                        });
                       }}
                       onFocus={event => {
+                        setInsVars({
+                          ...insVars,
+                          insulinToCarbRatio: carbRatio.dinner
+                        });
                         event.target.select();
                       }}
                       customInput={TextField} 
