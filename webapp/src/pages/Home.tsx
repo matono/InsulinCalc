@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from "react-cookie";
 
-import { Box, Button, Paper, Container, Modal, Typography, TextField } from "@mui/material";
+import { Box, Button, Paper, Container, Modal, Typography, TextField, Tooltip } from "@mui/material";
 import { InputAdornment, IconButton, Fab } from "@mui/material";
 import Add from '@mui/icons-material/AddCircle';
 import Remove from '@mui/icons-material/RemoveCircle';
 import Submit from '@mui/icons-material/Autorenew';
+import Copy from '@mui/icons-material/ContentCopy';
 import Grid from '@mui/material/Grid';
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
@@ -141,10 +142,10 @@ const Home: React.FC = () => {
 
   useEffect(() => calcCarbInsulin(insVars.mealCarbohydrates, insVars.insulinToCarbRatio), [
     insVars.mealCarbohydrates,
-    insVars.insulinToCarbRatio,
+ //   insVars.insulinToCarbRatio,
   ])
   const calcCarbInsulin = (meal: number, ratio: number) => {
-    console.log("calcCarbInsulin");
+    //console.log("calcCarbInsulin");
     setInsVars(vars => ({
       ...vars, 
       carbInsulin: Round(meal * ratio, 2),
@@ -196,6 +197,33 @@ const Home: React.FC = () => {
     snack: cookies.insulinToCarbRatio_snack != undefined? cookies.insulinToCarbRatio_snack : 1.0,
     dinner: cookies.insulinToCarbRatio_dinner != undefined? cookies.insulinToCarbRatio_dinner : 1.0,
   });
+
+  const copyTextToClipboard = async(text: string) => {
+    if ('clipboard' in navigator) {
+      return await navigator.clipboard.writeText(text);
+    } else {
+      return document.execCommand('copy', true, text);
+    }
+  }
+
+  const [isCopied, setIsCopied] = useState(false);
+  const handleCopyClick = () => {
+    const copyText = 'カーボ比' 
+    + '朝' + Number(carbRatio.breakfast).toFixed(1)  
+    + '昼' + Number(carbRatio.lunch).toFixed(1) 
+    + '間' + Number(carbRatio.snack).toFixed(1)
+    + '夕' + Number(carbRatio.dinner).toFixed(1);
+    copyTextToClipboard(copyText)
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 1500);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -377,7 +405,31 @@ const Home: React.FC = () => {
 
             {/* 各食カーボ比 */}
             <Paper sx={{ p:1, mb:2 }} elevation={0} variant="outlined">
-              <Typography component="h3" variant="body1" >カーボ比</Typography>
+              <Grid container direction="row" justifyContent="space-between" alignItems="center">
+                <Grid item xs={10}>
+                  <Typography component="h3" variant="body1" >カーボ比</Typography>
+                </Grid>
+                <Grid item xs={1}>
+                  <Grid container justifyContent="flex-end">
+                    <Tooltip open={isCopied} title="Copied!" arrow placement="top" 
+                            PopperProps={{
+                                  modifiers: [
+                                    {
+                                      name: "offset",
+                                      options: {
+                                        offset: [0, -15],
+                                      },
+                                    },
+                                  ],
+                              }}>
+                      <IconButton color="primary" size="small" onClick={handleCopyClick}>
+                        <Copy  fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Grid>
+                </Grid>
+              </Grid>
+  
 
               <Grid container columnSpacing={1} sx={{p:1}} >
                 <Grid item xs={3}>
