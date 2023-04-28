@@ -225,6 +225,25 @@ const Home: React.FC = () => {
       });
   }
 
+  const setInsulinToCarbRatio = async(value: number) => {
+    setInsVars({
+      ...insVars,
+      insulinToCarbRatio: value
+    })
+  }
+
+  const setInsulinToCarbRatio_select = (value: number, target: HTMLInputElement) => {
+    setInsulinToCarbRatio(value)
+    .then(() => {
+      setTimeout(() => {
+        target.select();
+      }, 100);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  }
+   
   return (
     <ThemeProvider theme={theme}>
       
@@ -459,11 +478,7 @@ const Home: React.FC = () => {
                         });
                       }}
                       onFocus={event => {
-                        setInsVars({
-                          ...insVars,
-                          insulinToCarbRatio: carbRatio.breakfast
-                        });
-                        event.target.select();
+                        setInsulinToCarbRatio_select(carbRatio.breakfast, event.target);
                       }}
                       customInput={TextField} 
                       label="朝食" 
@@ -498,11 +513,7 @@ const Home: React.FC = () => {
                         });
                       }}
                       onFocus={event => {
-                        setInsVars({
-                          ...insVars,
-                          insulinToCarbRatio: carbRatio.lunch
-                        });
-                        event.target.select();
+                        setInsulinToCarbRatio_select(carbRatio.lunch, event.target);
                       }}
                       customInput={TextField} 
                       label="昼食" 
@@ -537,11 +548,7 @@ const Home: React.FC = () => {
                         });
                       }}
                       onFocus={event => {
-                        setInsVars({
-                          ...insVars,
-                          insulinToCarbRatio: carbRatio.snack
-                        });
-                        event.target.select();
+                        setInsulinToCarbRatio_select(carbRatio.snack, event.target);
                       }}
                       customInput={TextField} 
                       label="間食" 
@@ -576,11 +583,7 @@ const Home: React.FC = () => {
                         });
                       }}
                       onFocus={event => {
-                        setInsVars({
-                          ...insVars,
-                          insulinToCarbRatio: carbRatio.dinner
-                        });
-                        event.target.select();
+                        setInsulinToCarbRatio_select(carbRatio.dinner, event.target);
                       }}
                       customInput={TextField} 
                       label="夕食" 
