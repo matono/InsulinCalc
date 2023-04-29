@@ -61,7 +61,7 @@ const expireLong = () => {
 
 const expireShort = () => {
   const time = new Date(); 
-  time.setMinutes(time.getMinutes() + 30); // 30 min later
+  time.setMinutes(time.getMinutes() + 120); // 120 min later
   //time.setSeconds(time.getSeconds() + 10); // 10 sec later
   return time
 }
