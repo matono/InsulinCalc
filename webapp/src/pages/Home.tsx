@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from "react-cookie";
 
-import { Box, Button, Paper, Container, Modal, Typography, TextField, Tooltip } from "@mui/material";
-import { InputAdornment, IconButton, Fab } from "@mui/material";
-import Add from '@mui/icons-material/AddCircle';
-import Remove from '@mui/icons-material/RemoveCircle';
-import Submit from '@mui/icons-material/Autorenew';
-import Copy from '@mui/icons-material/ContentCopy';
+import { Box, Button, Paper, Container, Modal, Typography, Tooltip } from "@mui/material";
 import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import '@fontsource/roboto';
+
+import { InputAdornment, IconButton } from "@mui/material";
+import AddIcon from '@mui/icons-material/AddCircle';
+import RemoveIcon from '@mui/icons-material/RemoveCircle';
+import SubmitIcon from '@mui/icons-material/Autorenew';
+import CopyIcon from '@mui/icons-material/ContentCopy';
+import EditIcon from '@mui/icons-material/Edit';
 
 import { NumericFormat } from 'react-number-format';
 
@@ -107,21 +116,21 @@ const Home: React.FC = () => {
     const now = new Date(); 
 
     if(cookies.insulinToCarbRatio != undefined){
-        return cookies.insulinToCarbRatio; // Cookie 
+        return Number(cookies.insulinToCarbRatio); // Cookie 
     }
 
     const currentHour = now.getHours();
     if(6 <= currentHour && currentHour <= 10 && cookies.insulinToCarbRatio_breakfast != undefined){
-      return cookies.insulinToCarbRatio_breakfast;
+      return Number(cookies.insulinToCarbRatio_breakfast);
     }
     if(11 <= currentHour && currentHour <= 13 && cookies.insulinToCarbRatio_lunch != undefined){
-      return cookies.insulinToCarbRatio_lunch;
+      return Number(cookies.insulinToCarbRatio_lunch);
     }
     if(14 <= currentHour && currentHour <= 16 && cookies.insulinToCarbRatio_snack != undefined){
-      return cookies.insulinToCarbRatio_snack;
+      return Number(cookies.insulinToCarbRatio_snack);
     }
     if(17 <= currentHour && currentHour <= 20 && cookies.insulinToCarbRatio_dinner != undefined){
-      return cookies.insulinToCarbRatio_dinner;
+      return Number(cookies.insulinToCarbRatio_dinner);
     }
     return 1.0;
   }
@@ -132,9 +141,9 @@ const Home: React.FC = () => {
       mealCarbohydrates: 0,
       insulinToCarbRatio: currentInsulinToCarbRatio(),
       carbInsulin: 0,
-      currentBGL: cookies.currentBGL != undefined? cookies.currentBGL : 100,
-      targetBGL: cookies.targetBGL != undefined? cookies.targetBGL : 120,
-      insulinSensitivityFactor: cookies.insulinSensitivityFactor != undefined? cookies.insulinSensitivityFactor : 80,
+      currentBGL: cookies.currentBGL != undefined? Number(cookies.currentBGL) : 100,
+      targetBGL: cookies.targetBGL != undefined? Number(cookies.targetBGL) : 120,
+      insulinSensitivityFactor: cookies.insulinSensitivityFactor != undefined? Number(cookies.insulinSensitivityFactor) : 80,
       correctionBolusInsulin: 0,
       totalInsulin: 0,
     };
@@ -181,22 +190,47 @@ const Home: React.FC = () => {
     }));
   }
   
-  const [open, setOpen] = React.useState(false);
-  const handleClose = () => setOpen(false);
-  const handleOpen = () => {
+  const [resultModal, setResultModal] = React.useState(false);
+  const closeResultModal = () => setResultModal(false);
+  const openResultModal = () => {
     //console.log("handleOpen")
     calcCarbInsulin(insVars.mealCarbohydrates, insVars.insulinToCarbRatio);
     calcCorrectionBolusInsulin(insVars.currentBGL, insVars.targetBGL, insVars.insulinSensitivityFactor);
     calcTotalInsulin(insVars.carbInsulin, insVars.correctionBolusInsulin);
-    setOpen(true);
+    setResultModal(true);
   }
 
   const [carbRatio, setCarbRatio] = useState<InsulinToCarbRatio>({
-    breakfast: cookies.insulinToCarbRatio_breakfast != undefined? cookies.insulinToCarbRatio_breakfast : 1.0,
-    lunch: cookies.insulinToCarbRatio_lunch != undefined? cookies.insulinToCarbRatio_lunch : 1.0,
-    snack: cookies.insulinToCarbRatio_snack != undefined? cookies.insulinToCarbRatio_snack : 1.0,
-    dinner: cookies.insulinToCarbRatio_dinner != undefined? cookies.insulinToCarbRatio_dinner : 1.0,
+    breakfast: cookies.insulinToCarbRatio_breakfast != undefined? Number(cookies.insulinToCarbRatio_breakfast) : 1.0,
+    lunch: cookies.insulinToCarbRatio_lunch != undefined? Number(cookies.insulinToCarbRatio_lunch) : 1.0,
+    snack: cookies.insulinToCarbRatio_snack != undefined? Number(cookies.insulinToCarbRatio_snack) : 1.0,
+    dinner: cookies.insulinToCarbRatio_dinner != undefined? Number(cookies.insulinToCarbRatio_dinner) : 1.0,
   });
+
+  const [copyText, setCopyText] = React.useState(
+    cookies.copyText != undefined
+    ? cookies.copyText 
+    : "カーボ比朝${カーボ比.朝食}昼${カーボ比.昼食}間${カーボ比.間食}夕${カーボ比.夕食} 超速:ノボラピッド 持効:トレシーバ"
+  );
+  useEffect(() => {
+    setCookie("copyText", copyText, { expires: expireLong(), path: '/' });
+  }, [copyText])
+  const getCopyText = (input: string) => {
+    const output = input
+    .replaceAll("${食前血糖値}",     (insVars.currentBGL).toFixed(0))
+    .replaceAll("${目標血糖値}",     (insVars.targetBGL).toFixed(0))
+    .replaceAll("${インスリン効果比}",(insVars.insulinSensitivityFactor).toFixed(0))
+    .replaceAll("${補正インスリン}", (insVars.correctionBolusInsulin).toFixed(2))
+    .replaceAll("${総カーボ数}",     (insVars.mealCarbohydrates).toFixed(2))
+    .replaceAll("${カーボ比}",       (insVars.insulinToCarbRatio).toFixed(1))
+    .replaceAll("${糖質インスリン}", (insVars.carbInsulin).toFixed(2))
+    .replaceAll("${合計インスリン}", (insVars.totalInsulin).toFixed(2))
+    .replaceAll("${カーボ比.朝食}",  (carbRatio.breakfast).toFixed(1))
+    .replaceAll("${カーボ比.昼食}",  (carbRatio.lunch).toFixed(1))
+    .replaceAll("${カーボ比.間食}",  (carbRatio.snack).toFixed(1))
+    .replaceAll("${カーボ比.夕食}",  (carbRatio.dinner).toFixed(1) )
+    return output;
+  }
 
   const copyTextToClipboard = async(text: string) => {
     if ('clipboard' in navigator) {
@@ -208,12 +242,13 @@ const Home: React.FC = () => {
 
   const [isCopied, setIsCopied] = useState(false);
   const handleCopyClick = () => {
-    const copyText = 'カーボ比' 
-    + '朝' + Number(carbRatio.breakfast).toFixed(1)  
-    + '昼' + Number(carbRatio.lunch).toFixed(1) 
-    + '間' + Number(carbRatio.snack).toFixed(1)
-    + '夕' + Number(carbRatio.dinner).toFixed(1);
-    copyTextToClipboard(copyText)
+    // const copyText = 'カーボ比' 
+    // + '朝' + carbRatio.breakfast.toFixed(1)  
+    // + '昼' + carbRatio.lunch.toFixed(1) 
+    // + '間' + carbRatio.snack.toFixed(1)
+    // + '夕' + carbRatio.dinner.toFixed(1);
+    const str = getCopyText(copyText);
+    copyTextToClipboard(str)
       .then(() => {
         setIsCopied(true);
         setTimeout(() => {
@@ -243,7 +278,15 @@ const Home: React.FC = () => {
       console.error(err);
     });
   }
-   
+
+  const [copyModal, setCopyModal] = React.useState(false);
+  const openCopyModal = () => {
+    setCopyModal(true);
+  };
+  const closeCopyModal = () => {
+    setCopyModal(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       
@@ -425,11 +468,41 @@ const Home: React.FC = () => {
             {/* 各食カーボ比 */}
             <Paper sx={{ p:1, mb:2 }} elevation={0} variant="outlined">
               <Grid container direction="row" justifyContent="space-between" alignItems="center">
-                <Grid item xs={10}>
+                <Grid item xs={8}>
                   <Typography component="h3" variant="body1" >カーボ比</Typography>
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item xs={4}>
                   <Grid container justifyContent="flex-end">
+
+                    <div>
+                      <IconButton color="primary" size="small" onClick={openCopyModal}>
+                        <EditIcon  fontSize="small" />
+                      </IconButton>
+                      <Dialog open={copyModal} onClose={closeCopyModal}>
+                        <DialogTitle>コピー文字列</DialogTitle>
+                        <DialogContent>
+                          <DialogContentText>
+                            例: {"カーボ比朝${カーボ比.朝食}昼${カーボ比.昼食}間${カーボ比.間食}夕${カーボ比.夕食} 超速:ノボラピッド 持効:トレシーバ"}``
+                          </DialogContentText>
+                          <TextField
+                            value={copyText}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {setCopyText(e.target.value)}} 
+                            type="text" 
+                            autoFocus
+                            multiline
+                            id="name"
+                            label="コピー文字列"
+                            placeholder="コピー文字列"
+                            fullWidth
+                            sx={{ mt: 3}}
+                          />
+                        </DialogContent>
+                        <DialogActions>
+                          <Button color="primary" onClick={closeCopyModal}>Done</Button>
+                        </DialogActions>
+                      </Dialog>
+                    </div>
+
                     <Tooltip open={isCopied} title="Copied!" arrow placement="top" 
                             PopperProps={{
                                   modifiers: [
@@ -442,7 +515,7 @@ const Home: React.FC = () => {
                                   ],
                               }}>
                       <IconButton color="primary" size="small" onClick={handleCopyClick}>
-                        <Copy  fontSize="small" />
+                        <CopyIcon  fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </Grid>
@@ -474,7 +547,7 @@ const Home: React.FC = () => {
                         setCookie("insulinToCarbRatio_breakfast", value, { expires: expireLong(), path: '/' });
                         setInsVars({
                           ...insVars, 
-                          insulinToCarbRatio: value,
+                          insulinToCarbRatio: Number(value),
                         });
                       }}
                       onFocus={event => {
@@ -509,7 +582,7 @@ const Home: React.FC = () => {
                         setCookie("insulinToCarbRatio_lunch", value, { expires: expireLong(), path: '/' });
                         setInsVars({
                           ...insVars, 
-                          insulinToCarbRatio: value,
+                          insulinToCarbRatio: Number(value),
                         });
                       }}
                       onFocus={event => {
@@ -544,7 +617,7 @@ const Home: React.FC = () => {
                         setCookie("insulinToCarbRatio_snack", value, { expires: expireLong(), path: '/' });
                         setInsVars({
                           ...insVars, 
-                          insulinToCarbRatio: value,
+                          insulinToCarbRatio: Number(value),
                         });
                       }}
                       onFocus={event => {
@@ -579,7 +652,7 @@ const Home: React.FC = () => {
                         setCookie("insulinToCarbRatio_dinner", value, { expires: expireLong(), path: '/' });
                         setInsVars({
                           ...insVars, 
-                          insulinToCarbRatio: value,
+                          insulinToCarbRatio: Number(value),
                         });
                       }}
                       onFocus={event => {
@@ -632,7 +705,7 @@ const Home: React.FC = () => {
                                         color="error"
                                         size="large"
                                       >
-                                        <Remove />
+                                        <RemoveIcon />
                                       </IconButton>
                                     </InputAdornment>
                                 }}
@@ -675,7 +748,7 @@ const Home: React.FC = () => {
                                   color="primary"
                                   size="large"
                                 >
-                                  <Add />
+                                  <AddIcon />
                                 </IconButton>
                               </InputAdornment>
                           }}
@@ -769,18 +842,33 @@ const Home: React.FC = () => {
               <Grid item xs={12}>
                 <Button 
                   variant="contained" 
-                  startIcon={<Submit />} 
+                  startIcon={<SubmitIcon />} 
                   size="large"
                   fullWidth   
-                  onClick={handleOpen} >
+                  onClick={openResultModal} >
                   計算
                 </Button>
+                <Dialog open={resultModal} onClose={closeResultModal}>
+                  <DialogTitle>インスリン単位数</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                    ( {insVars.currentBGL} - {insVars.targetBGL} ) / {insVars.insulinSensitivityFactor} + ({insVars.mealCarbohydrates} * {insVars.insulinToCarbRatio}) <br />
+                  = {insVars.correctionBolusInsulin} + {insVars.carbInsulin} <br />
+                  = {insVars.totalInsulin} &uuml;
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={closeResultModal}>Close</Button>
+                  </DialogActions>
+                </Dialog>
+{/*
                 <Modal
-                  open={open}
-                  onClose={handleClose}
+                  open={resultModal}
+                  onClose={closeResultModal}
                   aria-labelledby="modal-modal-title"
                   aria-describedby="modal-modal-description"
                 >
+
                   <Box sx={{
                       position: 'absolute',
                       top: '50%',
@@ -788,7 +876,6 @@ const Home: React.FC = () => {
                       transform: 'translate(-50%, -50%)',
                       width: 400,
                       bgcolor: 'background.paper',
-                      border: '2px solid #000',
                       boxShadow: 24,
                       p: 4,
                   }}>
@@ -802,6 +889,7 @@ const Home: React.FC = () => {
                     </Typography>
                   </Box>
                 </Modal>
+*/}
               </Grid>
             </Grid>
           </Box>
